@@ -5,7 +5,7 @@ PPJ project
 
 Contributors:
 
-Dean Babić
-Franjo Matković
-Bojan Lovrović
-Kristijan Ilšinović
+Dean Babić,
+Franjo Matković,
+Bojan Lovrović,
+Kristijan Ilšinović.
