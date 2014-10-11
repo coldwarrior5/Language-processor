@@ -5,10 +5,12 @@ import java.util.Scanner;
 public class Main {
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 		Scanner reader = new Scanner(System.in);
 		String output=reader.next();
+		reader.close();
 		System.out.print(output);
+		int a=5;
+		int b=a++;
 		
 	}
 
