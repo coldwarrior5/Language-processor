@@ -8,27 +8,18 @@ public class Main {
 	 * @param args
 	 * 
 	 */
-	public static void main(String[] args) {
-		//Scanner reader = new Scanner(System.in);
-		//String output=reader.next();
+	public static void main(String[] args) {	
+		
+		eNFA enfa = new eNFA("array[(0|1|2|3|4|5|6|7|8|9)*]");
+		Scanner reader = new Scanner(System.in);
+		
+		while (true){
+			String output=reader.next();
+			enfa.Reset();
+			enfa.InputString(output);
+			System.out.println(enfa.IsInAcceptableState());
+		}
+		
 		//reader.close();
-		//System.out.print(output);
-		// komentar by bojan
-		// moj komentar		
-		
-		Covjek bojan = new Covjek(178.35f, 35, "Bojan Lovroviæ");
-		
-		System.out.println(bojan.mName + bojan.mSurname);
 	}
-	/**
-	 * @author Bojan
-	 * @param
-	 * @return
-	 * This function takes two variables and multiplies them
-	 */
-	public static int count(int a, int b){
-		return a*b;
-		
-	}
-
 }
