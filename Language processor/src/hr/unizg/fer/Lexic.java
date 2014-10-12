@@ -16,15 +16,15 @@ public class Lexic {
 	
 	/**
 	 * 
-	 * @param
+	 * @param name String, name of the class
 	 * @throws FileNotFoundException
 	 * @throws UnsupportedEncodingException
 	 * This is constructor that creates the file and adds the beginning lines.
 	 * 
 	 */
-	public Lexic() throws FileNotFoundException, UnsupportedEncodingException{
+	public Lexic(String name) throws FileNotFoundException, UnsupportedEncodingException{
 		
-		mWriter = new PrintWriter("src/hr/unizg/fer/LA.java", "UTF-8");
+		mWriter = new PrintWriter("src/hr/unizg/fer/" + name + ".java", "UTF-8");
 		mWriter.println("package hr.unizg.fer;");
 		
 	}
@@ -84,6 +84,27 @@ public class Lexic {
 		if(fStatic) output="static ";
 		output=output + " " + fReturn + " " + fName + " ( " + fVariables + " ){";
 		mWriter.println(output);
+		
+	}
+	
+	/**
+	 * 
+	 * @param variable
+	 * @param start
+	 * @param end
+	 * @param step
+	 * This function implements for loop
+	 */
+	public void For(String variable, int start, int end, int step){
+		
+		mWriter.println("for( " + variable + " = " + start + " ; " + variable + " < " + end + " ; " + variable + " += " + step + "){");
+		
+	}
+	
+	
+	public void Input(String input){
+		
+		mWriter.println(input);
 		
 	}
 	
