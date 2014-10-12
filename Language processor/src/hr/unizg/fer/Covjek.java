@@ -27,7 +27,38 @@ public class Covjek {
 	private float mHeight;
 	private int mAge;
 	public String mName;
-	public String mSurname;
 	protected String OIB;
+	public float getmHeight() {
+		return mHeight;
+	}
+
+	public void setmHeight(float mHeight) {
+		this.mHeight = mHeight;
+	}
+
+	public int getmAge() {
+		return mAge;
+	}
+
+	public void setmAge(int mAge) {
+		this.mAge = mAge;
+	}
+
+	public String getmName() {
+		return mName;
+	}
+
+	public void setmName(String mName) {
+		this.mName = mName;
+	}
+
+	public String getOIB() {
+		return OIB;
+	}
+
+	public void setOIB(String oIB) {
+		OIB = oIB;
+	}
+	
 	
 }
