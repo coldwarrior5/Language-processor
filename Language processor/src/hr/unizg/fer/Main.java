@@ -12,8 +12,6 @@ public class Main {
 		int a=5;
 		int b=a++;
 		System.out.print(b);
-		// komentar by bojan
-		// moj komentar
 	}
 
 }
