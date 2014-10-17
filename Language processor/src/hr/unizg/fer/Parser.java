@@ -1,133 +1,201 @@
 package hr.unizg.fer;
 
-import java.io.Console;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Parser {
 	
-	private class regDef{
-		
-		String regDefName;
-		String regExpression;
-	
+	public class RegDef{
+		String mRegDefName;
+		String mRegEx;
+		int mPriority;
 	}
 	
-	private class state{
-		
-		String stateName;
-		
+	public class State{
+		String mStateName;
 	}
 	
-	private class lexicalToken{
-		
-		String lexicalTokenName;
-		
+	public class LexicalToken{
+		String mLexicalTokenName;
 	}
 	
-	private class lexicalRule{
-		
-		String lexicalState;
-		String regDef;
-		List<String> rule = new ArrayList<String>();
-		int numberOfRules=0;
+	public class LexicalRule{
+		String mLexicalState;
+		String mRegDef;
+		List<String> mArguments = new ArrayList<String>();
 	}
 	
-	public List<regDef> regDefList = new ArrayList<regDef>();
-	public List<state> stateList = new ArrayList<state>();
-	public List<lexicalToken> lexicalTokenList = new ArrayList<lexicalToken>();
-	public List<lexicalRule> lexicalRuleList = new ArrayList<lexicalRule>();
+	private List<RegDef> mRegDefList = new ArrayList<RegDef>();
+	private List<State> mStateList = new ArrayList<State>();
+	private List<LexicalToken> mLexicalTokenList = new ArrayList<LexicalToken>();
+	private List<LexicalRule> mLexicalRuleList = new ArrayList<LexicalRule>();
 	
+	/**
+	 * Creates arrays of data populated by parsing the .lan file.
+	 * @author Kristijan
+	 * @param lanFile - is the path of the .lan file that contains all the rules for given language.
+	 */
+	public Parser(String lanFile){
+		
+		BufferedReader br;
+	    try {
+	    	br = new BufferedReader(new FileReader(lanFile));
+	    	
+	    	String line;
+			line = br.readLine();
+			
+			while(line.substring(0,1).equals("{")){
+				FillRegDef(line);
+				line = br.readLine();
+			};
+			
+			if(line.substring(0,2).equals("%X")){
+				FillState(line);
+				line = br.readLine();
+			}
+			
+			if(line.substring(0,2).equals("%L")){
+				FillLexicalToken(line);
+				line = br.readLine();
+			}
+			
+			while(line!=null && line.substring(0,1).equals("<")){
+				FillLexicalRule(line, br);
+				line = br.readLine();
+			};
+			
+			if(line!=null){
+				//print error:wrong input file
+			}
+	    	
+	        br.close();
+	        
+	    } 
+	    catch (IOException e) {
+			// TOO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * @return the mRegDefList
+	 */
+	public List<RegDef> GetmRegDefList() {
+		return mRegDefList;
+	}
 
-	
-	public void parseInput(){
-		
-		String personalBuffer="";
-		personalBuffer=System.console().readLine();
-		
-		while(personalBuffer.substring(0,1)=="{"){
-			fillRegDef(personalBuffer);
-			personalBuffer=System.console().readLine();
-		};
-		
-		if(personalBuffer.substring(0,2)=="%X"){
-			fillState(personalBuffer);
-			personalBuffer=System.console().readLine();
-		}
-		
-		if(personalBuffer.substring(0,2)=="%L"){
-			fillLexicalToken(personalBuffer);
-			personalBuffer=System.console().readLine();
-		}
-		
-		while(personalBuffer!=null && personalBuffer.substring(0,1)=="<"){
-			fillLexicalRule(personalBuffer);
-			personalBuffer=System.console().readLine();
-		};
-		
-		if(personalBuffer!=null){
-			//print error:wrong input file
-		}
-	}
-	
-	private void fillRegDef(String inputLine){
-		regDef temp = new regDef();
-		temp.regDefName = inputLine.substring(1, inputLine.indexOf("} "));
-		temp.regExpression = inputLine.substring(inputLine.indexOf("} ")+2);
-		regDefList.add(temp);
+	/**
+	 * @return the mStateList
+	 */
+	public List<State> GetmStateList() {
+		return mStateList;
 	}
 
-	private void fillState(String inputLine){
-		state temp = new state();
+	/**
+	 * @return the mLexicalTokenList
+	 */
+	public List<LexicalToken> GetLexicalTokenList() {
+		return mLexicalTokenList;
+	}
+
+	/**
+	 * @return the mLexicalRuleList
+	 */
+	public List<LexicalRule> GetLexicalRuleList() {
+		return mLexicalRuleList;
+	}
+
+	/**
+	 * Replaces regular expression definition names with actual regular expressions.
+	 * @author Bojan
+	 * @param regEx - the regular expression that needs processing.
+	 */
+	private String ProcessRegEx(String regEx){
+		while (regEx.indexOf("{") >= 0){
+			String regDefName = regEx.substring(regEx.indexOf("{") + 1, regEx.indexOf("}"));
+			for (int i = 0; i < mRegDefList.size(); ++i)
+				if (mRegDefList.get(i).mRegDefName.equals(regDefName)){
+					String replaceString = "{" + regDefName + "}";
+					regEx = regEx.replace(replaceString, mRegDefList.get(i).mRegEx);
+				}
+		}
+		return regEx;
+	}
+	
+	private void FillRegDef(String inputLine){
+		RegDef temp = new RegDef();
+		temp.mRegDefName = inputLine.substring(1, inputLine.indexOf("} "));
+		temp.mRegEx = inputLine.substring(inputLine.indexOf("} ")+2);
+		temp.mRegEx = ProcessRegEx(temp.mRegEx);
+		temp.mPriority = mRegDefList.size();
+		mRegDefList.add(temp);
+	}
+
+	private void FillState(String inputLine){
 		if(inputLine.indexOf("S_")>0){
 			inputLine=inputLine.substring(inputLine.indexOf("S_"));
 		}
 		else{
 			return;
 		}
+		
+		State temp;
 		do{
+			temp = new State();
 			if(inputLine.indexOf(" ")>0){
-				temp.stateName = inputLine.substring(0, inputLine.indexOf(" "));
+				temp.mStateName = inputLine.substring(0, inputLine.indexOf(" "));
 				inputLine=inputLine.substring(inputLine.indexOf(" ")+1);
 			}
 			else{
-				temp.stateName = inputLine;
+				temp.mStateName = inputLine;
 			}
-			stateList.add(temp);
-		}while(temp.stateName != inputLine);
+			mStateList.add(temp);
+		}while(temp.mStateName != inputLine);
 	}
 	
-	private void fillLexicalToken(String inputLine){
-		lexicalToken temp = new lexicalToken();
-		if(inputLine.length()>4){
+	private void FillLexicalToken(String inputLine){
+		if(inputLine.length() >= 4){
 			inputLine=inputLine.substring(inputLine.indexOf(" ")+1);
 		}
 		else{
 			return;
 		}
+		
+		LexicalToken temp;
 		do{
+			temp = new LexicalToken();
 			if(inputLine.indexOf(" ")>0){
-				temp.lexicalTokenName = inputLine.substring(0, inputLine.indexOf(" "));
+				temp.mLexicalTokenName = inputLine.substring(0, inputLine.indexOf(" "));
 				inputLine=inputLine.substring(inputLine.indexOf(" ")+1);
 			}
 			else{
-				temp.lexicalTokenName = inputLine;
+				temp.mLexicalTokenName = inputLine;
 			}
-			lexicalTokenList.add(temp);
-		}while(temp.lexicalTokenName != inputLine);
+			mLexicalTokenList.add(temp);
+		}while(temp.mLexicalTokenName != inputLine);
 		
 	}
 	
-	private void fillLexicalRule(String inputLine){
-		lexicalRule temp = new lexicalRule();
-		temp.lexicalState = inputLine.substring(1, inputLine.indexOf(">"));
-		temp.regDef = inputLine.substring(inputLine.indexOf(">")+1);
-		inputLine = System.console().readLine();                   // preskaèe "{"
-		while((inputLine = System.console().readLine()) != "}"){
-			temp.rule.add(inputLine);
-			temp.numberOfRules = temp.numberOfRules + 1;
+	private void FillLexicalRule(String inputLine, BufferedReader br){
+		try {
+			LexicalRule temp = new LexicalRule();
+			temp.mLexicalState = inputLine.substring(1, inputLine.indexOf(">"));
+			temp.mRegDef = inputLine.substring(inputLine.indexOf(">")+1);
+			temp.mRegDef = ProcessRegEx(temp.mRegDef);
+			
+			String line = br.readLine(); // skips "{"
+			while(!(line = br.readLine()).equals("}")){
+				temp.mArguments.add(line);
+			}
+			mLexicalRuleList.add(temp);	
+		} 
+		catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		lexicalRuleList.add(temp);
 	}
 
 }

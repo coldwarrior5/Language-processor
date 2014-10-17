@@ -25,10 +25,9 @@ public class eNFA {
 	private int mBeginningStateId, mAcceptableStateId, mStatesNum;
 	
 	/**
-	 * @author Bojan
-	 * @param regEx is the input regular expression.
-	 * @return
 	 * Creates nondeterministic finite automata with epsilon transitions.
+	 * @author Bojan
+	 * @param regEx - is the input regular expression.
 	 */
 	public eNFA(String regEx){
 		mStatesNum = 0;
@@ -40,10 +39,9 @@ public class eNFA {
 	}
 	
 	/**
-	 * @author Bojan
-	 * @param -none
-	 * @return
 	 * Resets the eNFA to the same state it was in after the constructor was called.
+	 * @author Bojan
+	 * @param - none
 	 */
 	public void Reset(){
 		for (int i = 0; i < mStates.size(); ++i){
@@ -55,10 +53,9 @@ public class eNFA {
 	}
 	
 	/**
-	 * @author Bojan
-	 * @param input string of characters
-	 * @return
 	 * Inputs sequential stream of characters into automata and uses transitions to determine new states.
+	 * @author Bojan
+	 * @param - input string of characters
 	 */
 	public void InputString(String input){
 		for (int i = 0; i < input.length(); ++i){
@@ -67,10 +64,9 @@ public class eNFA {
 	}
 	
 	/**
-	 * @author Bojan
-	 * @param input just one character
-	 * @return
 	 * Inputs character into automata and uses transitions to determine new states.
+	 * @author Bojan
+	 * @param - input just one character
 	 */
 	public void InputChar(char input){
 		for (int i = 0; i < mStates.size(); ++i) mStates.get(i).mOld = true;
@@ -93,11 +89,10 @@ public class eNFA {
 	}
 	
 	/**
-	 * @author Bojan
-	 * @param -none
-	 * @return
 	 * Check whether automata is in acceptable state. Use this after InputString() to see
 	 * if your string is in language defined in this automata
+	 * @author Bojan
+	 * @param - none
 	 */
 	public Boolean IsInAcceptableState(){
 		int stateId = FindState(mAcceptableStateId);
