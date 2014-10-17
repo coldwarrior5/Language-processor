@@ -22,9 +22,9 @@ public class Main {
 		LAG lag = new LAG();
 		lag.AddVariable("int", "mCurrentLine");
 		lag.AddVariable("String", "mCurrentState");
-		lag.AddFunction();
-		lag.AddFunction();
-		lag.AddFunction();
+		lag.AddFunction("f1");
+		lag.AddFunction("f2");
+		lag.AddFunction("f3");
 		lag.Write("src/hr/unizg/fer/");
 	}
 }

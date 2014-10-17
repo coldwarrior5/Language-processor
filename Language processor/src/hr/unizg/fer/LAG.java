@@ -16,7 +16,7 @@ public class LAG {
 				"package hr.unizg.fer;"
 				+ "\n"
 				+ "\n"
-				+ "\npublic class Main{"
+				+ "\npublic class LA{"
 				+ "\n"
 				+ "\n"
 				+ "\n\tpublic static void main(String[] args){"
@@ -24,12 +24,12 @@ public class LAG {
 				+ "\n\t}"
 				+ "\n}");
 		
-		mVarInsertPoint = 43;
-		mFuncInsertPoint = 43;
+		mVarInsertPoint = 41;
+		mFuncInsertPoint = 41;
 	}
 	
-	public void AddFunction(){
-		String inStr = 	"\n\n\tprivate static void F(String[] args){"
+	public void AddFunction(String name){
+		String inStr = 	"\n\n\tprivate static void " + name + "(){"
 						+ "\n"
 						+ "\n\t}";
 				
@@ -38,7 +38,7 @@ public class LAG {
 	}
 	
 	public void AddVariable(String type, String name){
-		String inStr = 	"\n\tprivate static " + type + " " + name;
+		String inStr = 	"\n\tprivate static " + type + " " + name + ";";
 		mLA_String.insert(mVarInsertPoint, inStr);
 		mVarInsertPoint += inStr.length();
 		mFuncInsertPoint += inStr.length();
