@@ -28,10 +28,12 @@ public class LAG {
 		mFuncInsertPoint = 41;
 	}
 	
-	public void AddFunction(String name){
-		String inStr = 	"\n\n\tprivate static void " + name + "(){"
-						+ "\n"
-						+ "\n\t}";
+	public void AddFunction(String name, String body){
+		
+		String[] lines = body.split("\n");
+		String inStr = 	"\n\n\tprivate static void " + name + "(){";
+		for (int i = 0; i < lines.length; ++i) inStr += "\n\t\t" + lines[i];
+		inStr += "\n\t}";
 				
 		mLA_String.insert(mFuncInsertPoint, inStr);
 		mFuncInsertPoint += inStr.length();

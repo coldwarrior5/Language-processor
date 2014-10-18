@@ -180,6 +180,7 @@ public class eNFA {
 				if (prefixFlag){ // 1
 					prefixFlag = false;
 					char inputC;
+					// jos dodati za * $ | \ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 					if (regEx.charAt(i) == 't') inputC = '\t';
 					else if (regEx.charAt(i) == 'n') inputC = '\n';
 					else if (regEx.charAt(i) == '_') inputC = ' ';

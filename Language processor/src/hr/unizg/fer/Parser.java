@@ -114,8 +114,14 @@ public class Parser {
 	 * @param regEx - the regular expression that needs processing.
 	 */
 	private String ProcessRegEx(String regEx){
-		while (regEx.indexOf("{") >= 0){
-			String regDefName = regEx.substring(regEx.indexOf("{") + 1, regEx.indexOf("}"));
+		int openedCurlyBracketsIndex = 0;
+		while ((openedCurlyBracketsIndex = regEx.indexOf("{", openedCurlyBracketsIndex + 1)) >= 0){
+			if (regEx.charAt(openedCurlyBracketsIndex - 1) == '\\') continue; // this is special character {
+			int closedCurlyBracketsIndex = regEx.indexOf("}");
+			while (regEx.charAt(closedCurlyBracketsIndex - 1) == '\\'){ // this is special character }
+				closedCurlyBracketsIndex = regEx.indexOf("}", closedCurlyBracketsIndex + 1);
+			}
+			String regDefName = regEx.substring(openedCurlyBracketsIndex + 1, closedCurlyBracketsIndex);
 			for (int i = 0; i < mRegDefList.size(); ++i)
 				if (mRegDefList.get(i).mRegDefName.equals(regDefName)){
 					String replaceString = "{" + regDefName + "}";
@@ -197,5 +203,4 @@ public class Parser {
 			e.printStackTrace();
 		}
 	}
-
 }
