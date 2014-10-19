@@ -7,7 +7,7 @@ public class Main {
 	 * 
 	 */
 	public static void main(String[] args) {
-		Parser parser = new Parser("test.lan");
+		Parser parser = new Parser();
 		
 		LAG lag = new LAG();
 		lag.AddImport("java.util.List");
@@ -105,6 +105,9 @@ public class Main {
 		lag.AddInMain("	System.out.println(mOutput.get(i).mUniformToken + \" \" + mOutput.get(i).mLine + \" \" + mOutput.get(i).mLexicUint);");
 		
 		// writes the generated program to a file.
-		lag.Write("src/hr/unizg/fer/");
+		lag.Write("../src/hr/unizg/fer/");		//works for terminal
+		/*log.Write("src/hr/unizg/fer/");			//works for Eclipse
+		 * 
+		 */
 	}
 }

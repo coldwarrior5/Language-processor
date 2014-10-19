@@ -1,9 +1,8 @@
 package hr.unizg.fer;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 public class Parser {
@@ -49,46 +48,47 @@ public class Parser {
 	 * @author Kristijan
 	 * @param lanFile - is the path of the .lan file that contains all the rules for given language.
 	 */
-	public Parser(String lanFile){
+	public Parser(){
 		
-		BufferedReader br;
-	    try {
-	    	br = new BufferedReader(new FileReader(lanFile));
+	    	String input = UtilitiesLA.ReadStringFromInput();
+	    	List<String> list = Arrays.asList(input.split("\n"));
+	    	Iterator<String> it = list.iterator();
+	    	String line=it.next();
 	    	
-	    	String line;
-			line = br.readLine();
-			
 			while(line.substring(0,1).equals("{")){
 				FillRegDef(line);
-				line = br.readLine();
+				line = it.next();
 			};
 			
 			if(line.substring(0,2).equals("%X")){
 				FillState(line);
-				line = br.readLine();
+				line = it.next();
 			}
 			
 			if(line.substring(0,2).equals("%L")){
 				FillLexicalToken(line);
-				line = br.readLine();
+				if(it.hasNext()){
+					line = it.next();
+				}
+				else{
+					line=null;
+				}
 			}
 			
 			while(line!=null && line.substring(0,1).equals("<")){
-				FillLexicalRule(line, br);
-				line = br.readLine();
+				FillLexicalRule(line, it);
+				if(it.hasNext()){
+					line = it.next();
+				}
+				else{
+					line=null;
+				}
 			};
 			
 			if(line!=null){
 				//print error:wrong input file
 			}
-	    	
-	        br.close();
-	        
-	    } 
-	    catch (IOException e) {
-			// TOO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 	}
 	
 	/**
@@ -196,8 +196,8 @@ public class Parser {
 		
 	}
 	
-	private void FillLexicalRule(String inputLine, BufferedReader br){
-		try {
+	private void FillLexicalRule(String inputLine, Iterator<String> it){
+		
 			LexicalRule temp = new LexicalRule();
 			temp.mLexicalState = inputLine.substring(1, inputLine.indexOf(">"));
 			temp.mRegEx = inputLine.substring(inputLine.indexOf(">")+1);
@@ -208,15 +208,15 @@ public class Parser {
 			temp.mGoToState = false;
 			temp.mReturn = false;
 			
-			String line = br.readLine(); // skips "{"
+			String line = it.next(); // skips "{"
 			
 			// name of the lexical token goes first
-			line = br.readLine();
+			line = it.next();
 			if (line.charAt(0) == '-') temp.mDiscardString = true;
 			else temp.mLexicalTokenName = line;
 			
 			// the rest of the arguments
-			while(!(line = br.readLine()).equals("}")){
+			while(!(line = it.next()).equals("}")){
 				
 				if (line.indexOf("NOVI_REDAK") >= 0) temp.mNewLine = true;
 				if (line.indexOf("UDJI_U_STANJE") >= 0){
@@ -229,10 +229,5 @@ public class Parser {
 				}
 			}
 			mLexicalRuleList.add(temp);	
-		} 
-		catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 }
