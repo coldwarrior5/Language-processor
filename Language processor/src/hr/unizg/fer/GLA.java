@@ -32,13 +32,12 @@ public class GLA {
 		 * This while loop is reading whole input and stores it to an array
 		 */
 		while(true){
+			
+			boolean next=input.hasNext();
 			String read=input.nextLine();
-			if(read.equals("")){
-				break;
-			}
-			else{
-				inputLines.add(read);
-			}
+			inputLines.add(read);
+			if(!next) break;
+			
 		}
 		input.close();
 		
@@ -46,7 +45,6 @@ public class GLA {
 		mOutput.StartClass();
 		mOutput.Fuction(false, true, "void", "main", "String[] args");
 		mOutput.DefineObject("Scanner", "input", "System.in");
-		
 		mOutput.Input("while(true){\nString read=input.nextLine();\nif(read.equals(\"\"))break;\n}");
 		mOutput.close();
 		mOutput.close();
