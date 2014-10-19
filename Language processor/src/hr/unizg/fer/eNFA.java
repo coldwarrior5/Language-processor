@@ -22,7 +22,7 @@ public class eNFA {
 	List<Transition> mTransitions = new ArrayList<Transition>();
 	List<State> mStates = new ArrayList<State>();
 	
-	private int mBeginningStateId, mAcceptableStateId, mStatesNum;
+	private int mInitialStateId, mAcceptableStateId, mStatesNum;
 	
 	/**
 	 * Creates nondeterministic finite automata with epsilon transitions.
@@ -31,10 +31,10 @@ public class eNFA {
 	 */
 	public eNFA(String regEx){
 		mStatesNum = 0;
-		mBeginningStateId = AddState().mId;
+		mInitialStateId = AddState().mId;
 		mAcceptableStateId = AddState().mId;
 		
-		ProcessRegEx(regEx, mBeginningStateId, mAcceptableStateId);
+		ProcessRegEx(regEx, mInitialStateId, mAcceptableStateId);
 		Reset();
 	}
 	
@@ -45,7 +45,7 @@ public class eNFA {
 	 */
 	public void Reset(){
 		for (int i = 0; i < mStates.size(); ++i){
-			if (mBeginningStateId == i) mStates.get(i).mUsed = true;
+			if (mInitialStateId == i) mStates.get(i).mUsed = true;
 			else mStates.get(i).mUsed = false;
 		}
 		

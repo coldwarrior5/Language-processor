@@ -24,8 +24,19 @@ public class Parser {
 	
 	public class LexicalRule{
 		String mLexicalState;
-		String mRegDef;
-		List<String> mArguments = new ArrayList<String>();
+		String mRegEx;
+		
+		Boolean mDiscardString; // "-" instead of lexical token
+		String mLexicalTokenName;
+		Boolean mNewLine;
+		Boolean mGoToState;
+		String mGoToStateName;
+		
+		// Treci posebni argument je VRATI_SE naZnak
+		// koji odreduje da se od procitanih znakova u leksicku jedinku treba grupirati prvih naZnak
+		// znakova, a ostali znakovi vracaju se u ulazni niz, kao da nisu ni procitani
+		Boolean mReturn;
+		int mReturnAt;
 	}
 	
 	private List<RegDef> mRegDefList = new ArrayList<RegDef>();
@@ -83,14 +94,14 @@ public class Parser {
 	/**
 	 * @return the mRegDefList
 	 */
-	public List<RegDef> GetmRegDefList() {
+	public List<RegDef> GetRegDefList() {
 		return mRegDefList;
 	}
 
 	/**
 	 * @return the mStateList
 	 */
-	public List<State> GetmStateList() {
+	public List<State> GetStateList() {
 		return mStateList;
 	}
 
@@ -189,12 +200,33 @@ public class Parser {
 		try {
 			LexicalRule temp = new LexicalRule();
 			temp.mLexicalState = inputLine.substring(1, inputLine.indexOf(">"));
-			temp.mRegDef = inputLine.substring(inputLine.indexOf(">")+1);
-			temp.mRegDef = ProcessRegEx(temp.mRegDef);
+			temp.mRegEx = inputLine.substring(inputLine.indexOf(">")+1);
+			temp.mRegEx = ProcessRegEx(temp.mRegEx);
+			
+			temp.mDiscardString = false;
+			temp.mNewLine = false;
+			temp.mGoToState = false;
+			temp.mReturn = false;
 			
 			String line = br.readLine(); // skips "{"
+			
+			// name of the lexical token goes first
+			line = br.readLine();
+			if (line.charAt(0) == '-') temp.mDiscardString = true;
+			else temp.mLexicalTokenName = line;
+			
+			// the rest of the arguments
 			while(!(line = br.readLine()).equals("}")){
-				temp.mArguments.add(line);
+				
+				if (line.indexOf("NOVI_REDAK") >= 0) temp.mNewLine = true;
+				if (line.indexOf("UDJI_U_STANJE") >= 0){
+					temp.mGoToState = true;
+					temp.mGoToStateName = line.substring(line.indexOf(" ") + 1, line.length());
+				}
+				if (line.indexOf("VRATI_SE") >= 0){
+					temp.mReturn = true;
+					temp.mReturnAt = Integer.parseInt(line.substring(line.indexOf(" ") + 1, line.length()));
+				}
 			}
 			mLexicalRuleList.add(temp);	
 		} 
