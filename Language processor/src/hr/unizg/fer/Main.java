@@ -7,7 +7,7 @@ public class Main {
 	 * 
 	 */
 	public static void main(String[] args) {
-		Parser parser = new Parser("D:\\FER\\PPJ\\Lab1\\12_greske_u_stanju\\test.lan");
+		Parser parser = new Parser("test.lan");
 		
 		LAG lag = new LAG();
 		lag.AddImport("java.util.List");
