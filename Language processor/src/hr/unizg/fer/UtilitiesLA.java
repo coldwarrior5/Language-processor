@@ -26,13 +26,19 @@ class UtilitiesLA {
 		String input = "";
 		Scanner scIn = new Scanner(System.in);
 		while(true){
-			String read = scIn.nextLine();
-			if(read.equals("")){
-				break;
+			
+			if(scIn.hasNext()==false){		//This works in terminal
+				break;						//It expects the stdin to close
 			}
-			else{
-				input += read + "\n";
+/*
+ * 			if(read.equals("")){			//This works in Eclipse
+				break;						//It expects for user to type another enter
 			}
+
+ */
+			String read = scIn.nextLine();	//Everything else looks normal
+			input += read + "\n";
+			
 		}
 		scIn.close();
 		return input;
