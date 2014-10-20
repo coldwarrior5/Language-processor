@@ -125,10 +125,10 @@ public class Parser {
 	 * @param regEx - the regular expression that needs processing.
 	 */
 	private String ProcessRegEx(String regEx){
-		int openedCurlyBracketsIndex = 0;
+		int openedCurlyBracketsIndex = -1;
 		while ((openedCurlyBracketsIndex = regEx.indexOf("{", openedCurlyBracketsIndex + 1)) >= 0){
-			if (regEx.charAt(openedCurlyBracketsIndex - 1) == '\\') continue; // this is special character {
-			int closedCurlyBracketsIndex = regEx.indexOf("}");
+			if (openedCurlyBracketsIndex != 0 && regEx.charAt(openedCurlyBracketsIndex - 1) == '\\') continue; // this is special character {
+			int closedCurlyBracketsIndex = regEx.indexOf("}", openedCurlyBracketsIndex);
 			while (regEx.charAt(closedCurlyBracketsIndex - 1) == '\\'){ // this is special character }
 				closedCurlyBracketsIndex = regEx.indexOf("}", closedCurlyBracketsIndex + 1);
 			}
