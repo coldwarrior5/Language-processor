@@ -4,7 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
-public class LAG {
+public class SourceCodeBuilder {
 	
 	private StringBuilder mLA_String;
 	private int mImportInsertPoint;
@@ -14,11 +14,11 @@ public class LAG {
 	private int mMainInsertPoint;
 	
 	/**
-	 * Creates a new instance of Lexical analyzer generator.
+	 * Creates a new instance of SourceCodeGenerator.
 	 * @author Bojan
 	 * @param - none
 	 */
-	public LAG(){
+	public SourceCodeBuilder(){
 		mLA_String = new StringBuilder();
 		mLA_String.append(
 				"package hr.unizg.fer;"
