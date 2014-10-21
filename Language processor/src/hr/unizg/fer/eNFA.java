@@ -9,7 +9,8 @@ public class eNFA {
 		int mCurrentStateId;		// Current state
 		int mNextStateId;			// The state NFA will be in after this transition completes
 		char mInputC; 				// Input character
-		static final char Epsilon = '$';
+		Boolean mIsEpsilon;			// Flag that indicates if this is epsilon transition.
+		//static final char Epsilon = (char)255;
 		}
 	
 	private class State{
@@ -26,7 +27,6 @@ public class eNFA {
 	
 	/**
 	 * Creates nondeterministic finite automata with epsilon transitions.
-	 * @author Bojan
 	 * @param regEx - is the input regular expression.
 	 */
 	public eNFA(String regEx){
@@ -40,7 +40,6 @@ public class eNFA {
 	
 	/**
 	 * Resets the eNFA to the same state it was in after the constructor was called.
-	 * @author Bojan
 	 * @param - none
 	 */
 	public void Reset(){
@@ -54,7 +53,6 @@ public class eNFA {
 	
 	/**
 	 * Inputs sequential stream of characters into automata and uses transitions to determine new states.
-	 * @author Bojan
 	 * @param - input string of characters
 	 */
 	public void InputString(String input){
@@ -65,7 +63,6 @@ public class eNFA {
 	
 	/**
 	 * Inputs character into automata and uses transitions to determine new states.
-	 * @author Bojan
 	 * @param - input just one character
 	 */
 	public void InputChar(char input){
@@ -91,7 +88,6 @@ public class eNFA {
 	/**
 	 * Check whether automata is in acceptable state. Use this after InputString() to see
 	 * if your string is in language defined in this automata
-	 * @author Bojan
 	 * @param - none
 	 */
 	public Boolean IsInAcceptableState(){
@@ -106,7 +102,7 @@ public class eNFA {
 			for (int i = 0; i < mTransitions.size(); ++i){
 				int state1Index = FindState(mTransitions.get(i).mCurrentStateId);
 				int state2Index = FindState(mTransitions.get(i).mNextStateId);
-				if (mTransitions.get(i).mInputC == Transition.Epsilon &&
+				if (mTransitions.get(i).mIsEpsilon &&
 						mStates.get(state1Index).mUsed == true &&
 						mStates.get(state2Index).mUsed == false){
 					goAgain = true;
@@ -137,6 +133,15 @@ public class eNFA {
 		temp.mInputC = inputC;
 		temp.mCurrentStateId = currentStateId;
 		temp.mNextStateId = nextStateId;
+		temp.mIsEpsilon = false;
+		mTransitions.add(temp);
+	}
+	
+	private void AddEpsilonTransition(int currentStateId, int nextStateId){
+		Transition temp = new Transition();
+		temp.mCurrentStateId = currentStateId;
+		temp.mNextStateId = nextStateId;
+		temp.mIsEpsilon = true;
 		mTransitions.add(temp);
 	}
 	
@@ -165,8 +170,8 @@ public class eNFA {
 				// add epsilon transitions
 				int tempLeftStateId = AddState().mId;
 				int tempRightStateId = AddState().mId;
-				AddTransition(leftStateId, tempLeftStateId, Transition.Epsilon);
-				AddTransition(tempRightStateId, rightStateId, Transition.Epsilon);
+				AddEpsilonTransition(leftStateId, tempLeftStateId);
+				AddEpsilonTransition(tempRightStateId, rightStateId);
 				ProcessRegEx(choices.get(i), tempLeftStateId, tempRightStateId);
 				}
 		}
@@ -181,6 +186,11 @@ public class eNFA {
 					prefixFlag = false;
 					char inputC;
 					// jos dodati za * $ | \ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+					if (regEx.charAt(i) == '*') inputC = '*';
+					if (regEx.charAt(i) == '$') inputC = '$';
+					if (regEx.charAt(i) == '|') inputC = '|';
+					if (regEx.charAt(i) == '\\') inputC = '\\';
+					
 					if (regEx.charAt(i) == 't') inputC = '\t';
 					else if (regEx.charAt(i) == 'n') inputC = '\n';
 					else if (regEx.charAt(i) == '_') inputC = ' ';
@@ -199,7 +209,7 @@ public class eNFA {
 						
 						a = AddState().mId;
 						b = AddState().mId;
-						if (regEx.charAt(i) == '$') AddTransition(a, b, Transition.Epsilon);
+						if (regEx.charAt(i) == '$') AddEpsilonTransition(a, b);
 						else AddTransition(a, b, regEx.charAt(i));
 					}
 					else{ // 2b
@@ -228,19 +238,19 @@ public class eNFA {
 					a = AddState().mId;
 					b = AddState().mId;
 					
-					AddTransition(a, x, Transition.Epsilon);
-					AddTransition(y, b, Transition.Epsilon);
-					AddTransition(a, b, Transition.Epsilon);
-					AddTransition(y, x, Transition.Epsilon);
+					AddEpsilonTransition(a, x);
+					AddEpsilonTransition(y, b);
+					AddEpsilonTransition(a, b);
+					AddEpsilonTransition(y, x);
 					i = i+1;
 				}
 				
 				// connecting this part with the rest of the NFA
-				AddTransition(lastStateId, a, Transition.Epsilon);
+				AddEpsilonTransition(lastStateId, a);
 				lastStateId = b;
 			}
 			//dodaj_epsilon_prijelaz(automat, lastStateId, desno_stanje)	
-			AddTransition(lastStateId, rightStateId, Transition.Epsilon);
+			AddEpsilonTransition(lastStateId, rightStateId);
 		}		
 	}
 	

@@ -45,7 +45,6 @@ public class Parser {
 	
 	/**
 	 * Creates arrays of data populated by parsing the .lan file.
-	 * @author Kristijan
 	 * @param lanFile - is the path of the .lan file that contains all the rules for given language.
 	 */
 	public Parser(){
@@ -121,7 +120,6 @@ public class Parser {
 
 	/**
 	 * Replaces regular expression definition names with actual regular expressions.
-	 * @author Bojan
 	 * @param regEx - the regular expression that needs processing.
 	 */
 	private String ProcessRegEx(String regEx){
@@ -136,7 +134,7 @@ public class Parser {
 			for (int i = 0; i < mRegDefList.size(); ++i)
 				if (mRegDefList.get(i).mRegDefName.equals(regDefName)){
 					String replaceString = "{" + regDefName + "}";
-					regEx = regEx.replace(replaceString, mRegDefList.get(i).mRegEx);
+					regEx = regEx.replace(replaceString, "(" + mRegDefList.get(i).mRegEx + ")");
 				}
 		}
 		return regEx;

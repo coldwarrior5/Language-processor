@@ -3,27 +3,30 @@ package hr.unizg.fer;
 public class GLA {
 	
 	/**
-	 * Fixes the input string in a way so that each '\' gets copied next to it.
-	 * '\' --> "\\"
-	 * @author Bojan
+	 * Fixes the input string in a way so that:
+	 * 		- each '\' gets copied next to it ('\' --> "\\").
+	 * 		- each '"' gets '\' next to it ('"' --> "\"").
 	 * @param s - input string
 	 */
 	private static String FixString(String s){
 		
 		StringBuilder sb = new StringBuilder(s);
 		
-		for (int i = 0; i < sb.length(); ++i)
+		for (int i = 0; i < sb.length(); ++i){
 			if (sb.charAt(i) == '\\'){
 				sb.insert(i, '\\');
 				++i;
 			}
-		
+			if (sb.charAt(i) == '"'){
+				sb.insert(i, '\\');
+				++i;
+			}
+		}
 		return sb.toString();
 	}
 	
 	/**
 	 * Entry point for of this program.
-	 * @author Bojan
 	 * @param args
 	 */
 	public static void main(String[] args) {

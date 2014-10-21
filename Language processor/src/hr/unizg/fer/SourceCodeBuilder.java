@@ -15,7 +15,6 @@ public class SourceCodeBuilder {
 	
 	/**
 	 * Creates a new instance of SourceCodeGenerator.
-	 * @author Bojan
 	 * @param - none
 	 */
 	public SourceCodeBuilder(){
@@ -41,7 +40,6 @@ public class SourceCodeBuilder {
 	
 	/**
 	 * Adds a new package to the import part of the source.
-	 * @author Bojan
 	 * @param packageName - name of the package to import
 	 */
 	public void AddImport(String packageName){
@@ -56,7 +54,6 @@ public class SourceCodeBuilder {
 	
 	/**
 	 * Adds a new class to the source.
-	 * @author Bojan
 	 * @param name - name of the new class
 	 * body - body of new class
 	 */
@@ -76,7 +73,6 @@ public class SourceCodeBuilder {
 	
 	/**
 	 * Adds a new private static variable to the LA class.
-	 * @author Bojan
 	 * @param typeAndName - type and name of the new variable (eg. "int a")
 	 */
 	public void AddVariable(String typeAndName){
@@ -89,7 +85,6 @@ public class SourceCodeBuilder {
 	
 	/**
 	 * Adds a new private static function to the LA class.
-	 * @author Bojan
 	 * @param retType - type of the new function
 	 * name - name of the new function
 	 * arguments - arguments of the new function (eg. "String a, String b, int c")
@@ -109,7 +104,6 @@ public class SourceCodeBuilder {
 	
 	/**
 	 * Adds a new source parts in the public static main function in the LA class.
-	 * @author Bojan
 	 * @param stringToAdd - new string that represents some part of the code.
 	 */
 	public void AddInMain(String stringToAdd){
@@ -123,7 +117,6 @@ public class SourceCodeBuilder {
 	
 	/**
 	 * Adds a new empty line in the source of the public static main function in the LA class.
-	 * @author Bojan
 	 * @param - none
 	 */
 	public void AddEmptyLineInMain(){
@@ -135,7 +128,6 @@ public class SourceCodeBuilder {
 	
 	/**
 	 * Writes all generated code to a file named LA.java.
-	 * @author Bojan
 	 * @param dir - directory of the file to write into or create.
 	 */
 	public void Write(String dir){
