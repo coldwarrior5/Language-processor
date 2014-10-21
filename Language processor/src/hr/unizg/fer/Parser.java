@@ -15,6 +15,7 @@ public class Parser {
 	
 	public class State{
 		String mStateName;
+		int mStateId;
 	}
 	
 	public class LexicalToken{
@@ -22,14 +23,14 @@ public class Parser {
 	}
 	
 	public class LexicalRule{
-		String mLexicalState;
+		int mLexicalState;
 		String mRegEx;
 		
 		Boolean mDiscardString; // "-" instead of lexical token
 		String mLexicalTokenName;
 		Boolean mNewLine;
 		Boolean mGoToState;
-		String mGoToStateName;
+		int mGoToStateId;
 		
 		// Treci posebni argument je VRATI_SE naZnak
 		// koji odreduje da se od procitanih znakova u leksicku jedinku treba grupirati prvih naZnak
@@ -40,6 +41,7 @@ public class Parser {
 	
 	private List<RegDef> mRegDefList = new ArrayList<RegDef>();
 	private List<State> mStateList = new ArrayList<State>();
+	private int mStateCounter;
 	private List<LexicalToken> mLexicalTokenList = new ArrayList<LexicalToken>();
 	private List<LexicalRule> mLexicalRuleList = new ArrayList<LexicalRule>();
 	
@@ -49,45 +51,45 @@ public class Parser {
 	 */
 	public Parser(){
 		
-	    	String input = UtilitiesLA.ReadStringFromInput();
-	    	List<String> list = Arrays.asList(input.split("\n"));
-	    	Iterator<String> it = list.iterator();
-	    	String line=it.next();
+	    String input = UtilitiesLA.ReadStringFromInput();
+	    List<String> list = Arrays.asList(input.split("\n"));
+	    Iterator<String> it = list.iterator();
+	    String line=it.next();
 	    	
-			while(line.substring(0,1).equals("{")){
-				FillRegDef(line);
+		while(line.substring(0,1).equals("{")){
+			FillRegDef(line);
+			line = it.next();
+		};
+		
+		mStateCounter = 0;
+		if(line.substring(0,2).equals("%X")){
+			FillState(line);
+			line = it.next();
+		}
+			
+		if(line.substring(0,2).equals("%L")){
+			FillLexicalToken(line);
+			if(it.hasNext()){
 				line = it.next();
-			};
+			}
+			else{
+				line=null;
+			}
+		}
 			
-			if(line.substring(0,2).equals("%X")){
-				FillState(line);
+		while(line!=null && line.substring(0,1).equals("<")){
+			FillLexicalRule(line, it);
+			if(it.hasNext()){
 				line = it.next();
 			}
-			
-			if(line.substring(0,2).equals("%L")){
-				FillLexicalToken(line);
-				if(it.hasNext()){
-					line = it.next();
-				}
-				else{
-					line=null;
-				}
+			else{
+				line=null;
 			}
+		};
 			
-			while(line!=null && line.substring(0,1).equals("<")){
-				FillLexicalRule(line, it);
-				if(it.hasNext()){
-					line = it.next();
-				}
-				else{
-					line=null;
-				}
-			};
-			
-			if(line!=null){
-				//print error:wrong input file
-			}
-
+		if(line!=null){
+			//print error:wrong input file
+		}
 	}
 	
 	/**
@@ -117,7 +119,16 @@ public class Parser {
 	public List<LexicalRule> GetLexicalRuleList() {
 		return mLexicalRuleList;
 	}
-
+	
+	private Boolean IsOperator(String regEx, int i){
+		int br = 0;
+		while (i-1 >= 0 && regEx.charAt(i-1) == '\\') { // one \, like in C
+			br = br + 1;
+			i = i - 1;
+		}
+		return br%2 == 0;
+	}
+	
 	/**
 	 * Replaces regular expression definition names with actual regular expressions.
 	 * @param regEx - the regular expression that needs processing.
@@ -125,9 +136,9 @@ public class Parser {
 	private String ProcessRegEx(String regEx){
 		int openedCurlyBracketsIndex = -1;
 		while ((openedCurlyBracketsIndex = regEx.indexOf("{", openedCurlyBracketsIndex + 1)) >= 0){
-			if (openedCurlyBracketsIndex != 0 && regEx.charAt(openedCurlyBracketsIndex - 1) == '\\') continue; // this is special character {
+			if (!IsOperator(regEx, openedCurlyBracketsIndex)) continue; // this is special character {
 			int closedCurlyBracketsIndex = regEx.indexOf("}", openedCurlyBracketsIndex);
-			while (regEx.charAt(closedCurlyBracketsIndex - 1) == '\\'){ // this is special character }
+			while (!IsOperator(regEx, closedCurlyBracketsIndex)){ // this is special character }
 				closedCurlyBracketsIndex = regEx.indexOf("}", closedCurlyBracketsIndex + 1);
 			}
 			String regDefName = regEx.substring(openedCurlyBracketsIndex + 1, closedCurlyBracketsIndex);
@@ -167,6 +178,7 @@ public class Parser {
 			else{
 				temp.mStateName = inputLine;
 			}
+			temp.mStateId = mStateCounter++;
 			mStateList.add(temp);
 		}while(temp.mStateName != inputLine);
 	}
@@ -194,10 +206,17 @@ public class Parser {
 		
 	}
 	
+	private int FindStateId(String stateName){
+		for (int i = 0; i < mStateList.size(); ++i){
+			if (mStateList.get(i).mStateName.equals(stateName)) return i;
+		}
+		return -1;
+	}
+	
 	private void FillLexicalRule(String inputLine, Iterator<String> it){
 		
 			LexicalRule temp = new LexicalRule();
-			temp.mLexicalState = inputLine.substring(1, inputLine.indexOf(">"));
+			temp.mLexicalState = FindStateId(inputLine.substring(1, inputLine.indexOf(">")));
 			temp.mRegEx = inputLine.substring(inputLine.indexOf(">")+1);
 			temp.mRegEx = ProcessRegEx(temp.mRegEx);
 			
@@ -219,7 +238,7 @@ public class Parser {
 				if (line.indexOf("NOVI_REDAK") >= 0) temp.mNewLine = true;
 				if (line.indexOf("UDJI_U_STANJE") >= 0){
 					temp.mGoToState = true;
-					temp.mGoToStateName = line.substring(line.indexOf(" ") + 1, line.length());
+					temp.mGoToStateId = FindStateId(line.substring(line.indexOf(" ") + 1, line.length()));
 				}
 				if (line.indexOf("VRATI_SE") >= 0){
 					temp.mReturn = true;

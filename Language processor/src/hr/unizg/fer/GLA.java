@@ -38,9 +38,9 @@ public class GLA {
 		
 		scb.AddVariable("String mInput;");
 		scb.AddVariable("int mCurrentLine;");
-		scb.AddVariable("String mCurrentState;");
+		scb.AddVariable("int mCurrentState;");
 		// First state written after %X is the initial state.
-		scb.AddVariable("String mInitialState = \"" + parser.GetStateList().get(0).mStateName + "\";");
+		scb.AddVariable("int mInitialState = " + parser.GetStateList().get(0).mStateId + ";");
 		scb.AddVariable("int mLastProcessedPos;");
 		scb.AddVariable("int mReaderPos;");
 		scb.AddVariable("List<LexicalRule> mLexRules = new ArrayList<LexicalRule>();");
@@ -49,8 +49,8 @@ public class GLA {
 		String fBody = "LexicalRule temp;\n";
 		for (int i = 0; i < parser.GetLexicalRuleList().size(); ++i){
 			fBody += "temp = new LexicalRule();\n";
-			fBody += "temp.mLexicalState = \"" 
-					+ parser.GetLexicalRuleList().get(i).mLexicalState + "\";\n";
+			fBody += "temp.mLexicalState = " 
+					+ parser.GetLexicalRuleList().get(i).mLexicalState + ";\n";
 			fBody += "temp.mENFA = new eNFA(\"" 
 					+ FixString(parser.GetLexicalRuleList().get(i).mRegEx) + "\");\n";
 			fBody += "temp.mDiscardString = " 
@@ -61,8 +61,8 @@ public class GLA {
 					+ parser.GetLexicalRuleList().get(i).mNewLine + ";\n";
 			fBody += "temp.mGoToState = " 
 					+ parser.GetLexicalRuleList().get(i).mGoToState + ";\n";
-			fBody += "temp.mGoToStateName = \"" 
-					+ parser.GetLexicalRuleList().get(i).mGoToStateName + "\";\n";
+			fBody += "temp.mGoToStateId = " 
+					+ parser.GetLexicalRuleList().get(i).mGoToStateId + ";\n";
 			fBody += "temp.mReturn = " 
 					+ parser.GetLexicalRuleList().get(i).mReturn + ";\n";
 			fBody += "temp.mReturnAt = " 
@@ -76,7 +76,7 @@ public class GLA {
 				+ "temp.mLine = mCurrentLine;\n"
 				+ "temp.mUniformToken = mLexRules.get(ruleIndex).mLexicalTokenName;\n"
 				+ "if (mLexRules.get(ruleIndex).mNewLine) ++mCurrentLine;\n"
-				+ "if (mLexRules.get(ruleIndex).mGoToState) mCurrentState = mLexRules.get(ruleIndex).mGoToStateName;\n"
+				+ "if (mLexRules.get(ruleIndex).mGoToState) mCurrentState = mLexRules.get(ruleIndex).mGoToStateId;\n"
 				+ "if (mLexRules.get(ruleIndex).mReturn){\n"
 				+ "	temp.mLexicUint = mInput.substring(mLastProcessedPos + 1, mLastProcessedPos + mLexRules.get(ruleIndex).mReturnAt + 1);\n"
 				+ "	mLastProcessedPos += mLexRules.get(ruleIndex).mReturnAt;\n"
@@ -105,11 +105,15 @@ public class GLA {
 		scb.AddInMain("	do{ // loops for each character from mReaderPos to the end.");
 		scb.AddInMain("		int bestRuleToApply = Integer.MAX_VALUE;");
 		scb.AddInMain("		canApplyRule = false;");
+		scb.AddInMain("		Boolean breakLoop = true;");
 		scb.AddInMain("		for(int i = 0; i < mLexRules.size(); ++i){");
-		scb.AddInMain("			mLexRules.get(i).mENFA.InputChar(mInput.charAt(tempReaderPos));");
-		scb.AddInMain("			if (mLexRules.get(i).mENFA.IsInAcceptableState() && mLexRules.get(i).mLexicalState.equals(mCurrentState)){");
-		scb.AddInMain("				canApplyRule = true;");
-		scb.AddInMain("				if (i < bestRuleToApply) bestRuleToApply = i;");
+		scb.AddInMain("			if (mLexRules.get(i).mLexicalState == mCurrentState && !mLexRules.get(i).mENFA.DoesNotAccept()){");
+		scb.AddInMain("				mLexRules.get(i).mENFA.InputChar(mInput.charAt(tempReaderPos));");
+		scb.AddInMain("				breakLoop = false;");
+		scb.AddInMain("				if (mLexRules.get(i).mENFA.IsInAcceptableState()){");
+		scb.AddInMain("					canApplyRule = true;");
+		scb.AddInMain("					if (i < bestRuleToApply) bestRuleToApply = i;");
+		scb.AddInMain("				}");
 		scb.AddInMain("			}");
 		scb.AddInMain("		}");
 		scb.AddInMain("		if (canApplyRule){");
@@ -117,6 +121,7 @@ public class GLA {
 		scb.AddInMain("			mReaderPos = tempReaderPos;");
 		scb.AddInMain("		}");
 		scb.AddInMain("		++tempReaderPos;");
+		scb.AddInMain("		if (breakLoop) break; // every automata has rejected our input");
 		scb.AddInMain("	}while(tempReaderPos < mInput.length());");
 		scb.AddEmptyLineInMain();
 		scb.AddInMain("	if (bestRuleToApplySoFar != Integer.MAX_VALUE)ApplyRule(bestRuleToApplySoFar);");

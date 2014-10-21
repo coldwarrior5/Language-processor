@@ -3,13 +3,13 @@ package hr.unizg.fer;
 import java.util.Scanner;
 
 class LexicalRule{
-	String mLexicalState;
+	int mLexicalState;
 	eNFA mENFA;
 	Boolean mDiscardString;
 	String mLexicalTokenName;
 	Boolean mNewLine;
 	Boolean mGoToState;
-	String mGoToStateName;
+	int mGoToStateId;
 	Boolean mReturn;
 	int mReturnAt;
 }

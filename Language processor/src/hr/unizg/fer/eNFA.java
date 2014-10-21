@@ -24,6 +24,7 @@ public class eNFA {
 	List<State> mStates = new ArrayList<State>();
 	
 	private int mInitialStateId, mAcceptableStateId, mStatesNum;
+	private Boolean mDoesNotAccept;
 	
 	/**
 	 * Creates nondeterministic finite automata with epsilon transitions.
@@ -49,6 +50,7 @@ public class eNFA {
 		}
 		
 		DoEpsilonTransitions();
+		mDoesNotAccept = false;
 	}
 	
 	/**
@@ -83,6 +85,14 @@ public class eNFA {
 		}
 		
 		DoEpsilonTransitions();
+		
+		mDoesNotAccept = true;
+		for (int i = 0; i < mStates.size(); ++i){
+			if (mStates.get(i).mUsed){
+				mDoesNotAccept = false;
+				break;
+			}
+		}
 	}
 	
 	/**
@@ -93,6 +103,15 @@ public class eNFA {
 	public Boolean IsInAcceptableState(){
 		int stateId = FindState(mAcceptableStateId);
 		return mStates.get(stateId).mUsed;
+	}
+	
+	/**
+	 * Check whether automata has run out of states, meaning the input so far is not in regular
+	 * expression defined by this automata.
+	 * @param - none
+	 */
+	public Boolean DoesNotAccept(){
+		return mDoesNotAccept;
 	}
 	
 	private void DoEpsilonTransitions(){
