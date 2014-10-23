@@ -51,7 +51,7 @@ public class GLA {
 			fBody += "temp = new LexicalRule();\n";
 			fBody += "temp.mLexicalState = " 
 					+ parser.GetLexicalRuleList().get(i).mLexicalState + ";\n";
-			fBody += "temp.mENFA = new eNFA(\"" 
+			fBody += "temp.mENFA = new NFA(\"" 
 					+ FixString(parser.GetLexicalRuleList().get(i).mRegEx) + "\");\n";
 			fBody += "temp.mDiscardString = " 
 					+ parser.GetLexicalRuleList().get(i).mDiscardString + ";\n";
@@ -98,7 +98,7 @@ public class GLA {
 		scb.AddInMain("mInput = UtilitiesLA.ReadStringFromInput();");
 		scb.AddInMain("while(mLastProcessedPos < mInput.length() - 1){");
 		scb.AddInMain("	mReaderPos = mLastProcessedPos + 1;");
-		scb.AddInMain("	for(int i = 0; i < mLexRules.size(); ++i) mLexRules.get(i).mENFA.Reset(); // Resets the eNFAs for new lexic unit analysis.");
+		scb.AddInMain("	for(int i = 0; i < mLexRules.size(); ++i) mLexRules.get(i).mENFA.Reset_eNFA(); // Resets the eNFAs for new lexic unit analysis.");
 		scb.AddInMain("	int bestRuleToApplySoFar = Integer.MAX_VALUE;");
 		scb.AddInMain("	Boolean canApplyRule;");
 		scb.AddInMain("	int tempReaderPos = mReaderPos;");
@@ -107,10 +107,10 @@ public class GLA {
 		scb.AddInMain("		canApplyRule = false;");
 		scb.AddInMain("		Boolean breakLoop = true;");
 		scb.AddInMain("		for(int i = 0; i < mLexRules.size(); ++i){");
-		scb.AddInMain("			if (mLexRules.get(i).mLexicalState == mCurrentState && !mLexRules.get(i).mENFA.DoesNotAccept()){");
-		scb.AddInMain("				mLexRules.get(i).mENFA.InputChar(mInput.charAt(tempReaderPos));");
+		scb.AddInMain("			if (mLexRules.get(i).mLexicalState == mCurrentState && !mLexRules.get(i).mENFA.DoesNotAccept_eNFA()){");
+		scb.AddInMain("				mLexRules.get(i).mENFA.InputChar_eNFA(mInput.charAt(tempReaderPos));");
 		scb.AddInMain("				breakLoop = false;");
-		scb.AddInMain("				if (mLexRules.get(i).mENFA.IsInAcceptableState()){");
+		scb.AddInMain("				if (mLexRules.get(i).mENFA.IsInAcceptableState_eNFA()){");
 		scb.AddInMain("					canApplyRule = true;");
 		scb.AddInMain("					if (i < bestRuleToApply) bestRuleToApply = i;");
 		scb.AddInMain("				}");
@@ -128,7 +128,7 @@ public class GLA {
 		scb.AddInMain("	else mLastProcessedPos += 1; // error recovery");
 		scb.AddInMain("}");
 		scb.AddEmptyLineInMain();
-		scb.AddInMain("// We are done, just write that shit.");
+		scb.AddInMain("// We are done, just write that...");
 		scb.AddInMain("for (int i = 0; i < mOutput.size(); ++i) ");
 		scb.AddInMain("	System.out.println(mOutput.get(i).mUniformToken + \" \" + mOutput.get(i).mLine + \" \" + mOutput.get(i).mLexicUint);");
 		

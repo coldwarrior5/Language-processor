@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 class LexicalRule{
 	int mLexicalState;
-	eNFA mENFA;
+	NFA mENFA;
 	Boolean mDiscardString;
 	String mLexicalTokenName;
 	Boolean mNewLine;
