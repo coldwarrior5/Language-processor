@@ -1,4 +1,4 @@
-package hr.unizg.fer;
+package hr.unizg.fer.lab1;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -20,7 +20,7 @@ public class SourceCodeBuilder {
 	public SourceCodeBuilder(){
 		mLA_String = new StringBuilder();
 		mLA_String.append(
-				"package hr.unizg.fer;"
+				"package hr.unizg.fer.lab1;"
 				+ "\n"
 				+ "\n"
 				+ "\npublic class LA{"

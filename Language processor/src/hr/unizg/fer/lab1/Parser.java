@@ -1,4 +1,4 @@
-package hr.unizg.fer;
+package hr.unizg.fer.lab1;
 
 import java.util.ArrayList;
 import java.util.Arrays;
