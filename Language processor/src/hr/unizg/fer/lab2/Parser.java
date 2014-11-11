@@ -8,8 +8,8 @@ import java.util.List;
 public class Parser {
 	
 	public class Production{
-		int mLeftNonTerminalSymbol;
-		List<Integer> mRightSymbols = new ArrayList<Integer>();
+		int mLeftNonTerminalSymbolIndex;
+		List<Integer> mRightSymbolsIndices = new ArrayList<Integer>();
 	}
 	
 	public class Symbol{
@@ -21,9 +21,25 @@ public class Parser {
 	private List<String> mSyncronizationSymbols = new ArrayList<String>();
 	private List<Production> mProductions = new ArrayList<Production>();
 	
+	public List<Symbol> GetSymbols() {
+		return mSymbols;
+	}
+	
+	public List<String> GetSyncronizationSymbols() {
+		return mSyncronizationSymbols;
+	}
+	
+	public List<Production> GetProductions() {
+		return mProductions;
+	}
+	
+	public int GetInitialNonTerminalSymbol(){
+		return 0; // First declared symbol is also the initial one in grammar.
+	}
+	
 	public Parser(){
 		
-	    String input = UtilitiesLA.ReadStringFromInput();
+	    String input = Utilities.ReadStringFromInput();
 	    List<String> list = Arrays.asList(input.split("\n"));
 	    Iterator<String> it = list.iterator();
 	    String line = it.next();
@@ -55,9 +71,9 @@ public class Parser {
 				currentLeftSideSymIndex = FindSymbolIndex(line);
 			}else{ // or work on the current one
 				temp = new Production();
-				temp.mLeftNonTerminalSymbol = currentLeftSideSymIndex;
-				mProductions.add(temp);
+				temp.mLeftNonTerminalSymbolIndex = currentLeftSideSymIndex;
 				FillProduction(temp, line);
+				mProductions.add(temp);
 			}
 			
 			if(it.hasNext()){
@@ -117,19 +133,21 @@ public class Parser {
 			String temp = "";
 			temp = inputLine.substring(0, i - 1);
 			
-			production.mRightSymbols.add(FindSymbolIndex(temp));
-		
+			production.mRightSymbolsIndices.add(FindSymbolIndex(temp));
 				
 			inputLine = inputLine.substring(i);
 		}while(inputLine.length() > 0);
 	}
 	
 	private int FindSymbolIndex(String sym){
-		for (int i = 0; i < mSymbols.size(); ++i){
-			if (mSymbols.get(i).mSy.equals(sym)){
-				return i;
+		
+		if (sym.equals("$"))
+			return Utilities.ProductionEpsilonCode;
+		else{
+			for (int i = 0; i < mSymbols.size(); ++i){
+				if (mSymbols.get(i).mSy.equals(sym)) return i;
 			}
+			return Utilities.ProductionErrorCode;
 		}
-		return -1;
 	}
 }
