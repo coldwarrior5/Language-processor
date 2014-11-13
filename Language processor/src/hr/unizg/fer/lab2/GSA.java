@@ -1,8 +1,20 @@
 package hr.unizg.fer.lab2;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+
 public class GSA {
 
-	public static void main(String[] args) {
+	public static int GetNum(ActionType at){
+		switch (at){
+			case Move: return 0;
+			case Reduce: return 1;
+			case Accept: return 2;
+			default: return -1;
+		}
+	}
+	
+	public static void main(String[] args) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 		
 		Parser parser = new Parser();
@@ -12,57 +24,34 @@ public class GSA {
 		DFA dfa = new DFA(parser, nfa);
 		ParsingTable pt = new ParsingTable(parser, dfa);
 		
-		SourceCodeBuilder scb = new SourceCodeBuilder("SA");
-		scb.AddImport("java.util.List");
-		scb.AddImport("java.util.ArrayList");
-		scb.AddImport("java.util.Scanner");
+		PrintWriter outSymbols = new PrintWriter("src/hr/unizg/fer/lab2/symbols.txt");
+		PrintWriter outSynchronizationSymbols = new PrintWriter("src/hr/unizg/fer/lab2/synchronizationSymbols.txt");
+		PrintWriter outActionTable = new PrintWriter("src/hr/unizg/fer/lab2/actionTable.txt");
+		PrintWriter outNewStateTable = new PrintWriter("src/hr/unizg/fer/lab2/newStateTable.txt");
 		
-		scb.AddVariable("SyntaxTreeBuilder mSTB;");
-		
-		// Initialize() function
-		String fBody = "List<String> symbols = new ArrayList<String>();\n" + 
-		"List<Integer> syncronizationSymbols = new ArrayList<Integer>();\n";
-		for (int i = 0; i < parser.GetSymbols().size(); ++i)
-			fBody += "symbols.add(\"" + parser.GetSymbols().get(i).mSy + "\"); //\t\tindex: " + i + "\n";
-		for (int i = 0; i < parser.GetSyncronizationSymbols().size(); ++i)
-			fBody += "syncronizationSymbols.add(" + parser.GetSyncronizationSymbols().get(i) + ");\n";
-		fBody += "mSTB = new SyntaxTreeBuilder(symbols, syncronizationSymbols);\n\n// Now populate action table.\n";
+		for (int i = 0; i < parser.GetSymbols().size(); ++i){
+			outSymbols.println(parser.GetSymbols().get(i).mSy);
+		}
+		for (int i = 0; i < parser.GetSyncronizationSymbols().size(); ++i) {
+			outSynchronizationSymbols.println(parser.GetSyncronizationSymbols().get(i));
+		}
 		for (int i = 0; i < pt.GetCellsAction().size(); ++i){
-			fBody += "mSTB.AddActionCell(" + pt.GetCellsAction().get(i).mInputIndex + ", " +
-					pt.GetCellsAction().get(i).mStateIndex + ", " +
-					"ActionType." + pt.GetCellsAction().get(i).mActionType + ", " +
-					pt.GetCellsAction().get(i).mActionSpecificValue_a + ", " +
-					pt.GetCellsAction().get(i).mActionSpecificValue_b + ");\n";
+			outActionTable.println(pt.GetCellsAction().get(i).mInputIndex + " " +
+					pt.GetCellsAction().get(i).mStateIndex + " " +
+					GetNum(pt.GetCellsAction().get(i).mActionType) + " " +
+					pt.GetCellsAction().get(i).mActionSpecificValue_a + " " +
+					pt.GetCellsAction().get(i).mActionSpecificValue_b);
 		}
-		fBody += "\n// Now populate new_state table.\n";
 		for (int i = 0; i < pt.GetCellsNewState().size(); ++i){
-			fBody += "mSTB.AddNewStateCell(" + pt.GetCellsNewState().get(i).mInputIndex + ", " +
-					pt.GetCellsNewState().get(i).mStateIndex + ", " +
-					pt.GetCellsNewState().get(i).mActionSpecificValue + ");\n";
+			outNewStateTable.println(pt.GetCellsNewState().get(i).mInputIndex + " " +
+					pt.GetCellsNewState().get(i).mStateIndex + " " +
+					pt.GetCellsNewState().get(i).mActionSpecificValue);
 		}
-		scb.AddFunction("void", "Initialize", "", fBody);
 		
-		// main
-		scb.AddInMain("Initialize();");
-		scb.AddEmptyLineInMain();
-		scb.AddInMain("String input = Utilities.ReadStringFromInput();");
-		scb.AddInMain("Scanner scanner = new Scanner(input);");
-		scb.AddInMain("while (scanner.hasNextLine()) {");
-		scb.AddInMain("  String line = scanner.nextLine();");
-		scb.AddInMain("  // input the line until the parser reads it");
-		scb.AddInMain("  while(!mSTB.InputLine(line));");
-		scb.AddInMain("}");
-		scb.AddInMain("scanner.close();");
-		scb.AddEmptyLineInMain();
-		scb.AddInMain("// Input EOF.");
-		scb.AddInMain("while(!mSTB.InputLine(null));");
-		scb.AddEmptyLineInMain();
-		scb.AddInMain("// Write");
-		scb.AddInMain("String out = mSTB.WriteoutTree();");
-		scb.AddInMain("System.out.println(out);");
-		
-		scb.Write("src/hr/unizg/fer/lab2/");
-		
+		outSymbols.close();
+		outSynchronizationSymbols.close();
+		outActionTable.close();
+		outNewStateTable.close();
 	}
 
 }
