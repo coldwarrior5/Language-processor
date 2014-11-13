@@ -18,14 +18,14 @@ public class Parser {
 	}
 	
 	private List<Symbol> mSymbols = new ArrayList<Symbol>();
-	private List<String> mSyncronizationSymbols = new ArrayList<String>();
+	private List<Integer> mSyncronizationSymbols = new ArrayList<Integer>();
 	private List<Production> mProductions = new ArrayList<Production>();
 	
 	public List<Symbol> GetSymbols() {
 		return mSymbols;
 	}
 	
-	public List<String> GetSyncronizationSymbols() {
+	public List<Integer> GetSyncronizationSymbols() {
 		return mSyncronizationSymbols;
 	}
 	
@@ -48,6 +48,12 @@ public class Parser {
 			FillNonTerminalSymbols(line);
 			line = it.next();
 		};
+		// Now add a helper initial non terminal symbol at the beginning of the array.
+		// <S'>   ->   <S>
+		Symbol tempHS = new Symbol();
+		tempHS.mIsTerminal = false;
+		tempHS.mSy = "<S'>";
+		mSymbols.add(0, tempHS);
 		
 		if(line.substring(0,2).equals("%T")){
 			FillTerminalSymbols(line);
@@ -83,6 +89,13 @@ public class Parser {
 				line=null;
 			}
 		};
+		// Now add a production for the initial non terminal helper symbol.
+		// <S'>   ->   <S>
+		temp = new Production();
+		temp.mLeftNonTerminalSymbolIndex = 0;
+		temp.mRightSymbolsIndices = new ArrayList<Integer>();
+		temp.mRightSymbolsIndices.add(1);
+		mProductions.add(temp);	
 	}
 	
 	private void FillNonTerminalSymbols(String inputLine){
@@ -119,7 +132,7 @@ public class Parser {
 			i = inputLine.indexOf(" ") + 1;
 			String temp = "";
 			temp = inputLine.substring(0, i - 1);
-			mSyncronizationSymbols.add(temp);
+			mSyncronizationSymbols.add(FindSymbolIndex(temp));
 			inputLine = inputLine.substring(i);
 		}while(inputLine.length() > 0);
 	}

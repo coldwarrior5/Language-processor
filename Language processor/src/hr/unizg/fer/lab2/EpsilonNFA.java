@@ -103,6 +103,9 @@ public class EpsilonNFA {
 		for (int i = 0; i < rightSymbols.size(); ++i){
 			s.mItem.mRightSymbolsIndices.add(rightSymbols.get(i));
 		}
+		if (s.mItem.mRightSymbolsIndices.size() == 1 && // epsilon productions have s.mItem.mRightSymbolsIndices.size == 0
+				s.mItem.mRightSymbolsIndices.get(0) == Utilities.ProductionEpsilonCode) 
+			s.mItem.mRightSymbolsIndices.clear();
 		// copy mBEGINS_Set array
 		for (int i = 0; i < b_set.size(); ++i){
 			s.mItem.mBEGINS_Set.add(b_set.get(i));
@@ -181,12 +184,7 @@ public class EpsilonNFA {
 						for (int j = 0; j < state.mItem.mBEGINS_Set.size(); ++j)
 							if (!b_set.contains(state.mItem.mBEGINS_Set.get(j))) b_set.add(state.mItem.mBEGINS_Set.get(j));
 					}
-					List<Integer> rightSymbolsIndices;
-					if (mParser.GetProductions().get(i).mRightSymbolsIndices.get(0) == Utilities.ProductionEpsilonCode)
-						rightSymbolsIndices = new ArrayList<Integer>();
-					else
-						rightSymbolsIndices = mParser.GetProductions().get(i).mRightSymbolsIndices;
-					StateNFA newState = CreateState(symbolIndex, rightSymbolsIndices,
+					StateNFA newState = CreateState(symbolIndex, mParser.GetProductions().get(i).mRightSymbolsIndices,
 							(symbolIndex == mParser.GetInitialNonTerminalSymbol()), 0, b_set);
 					int newStateIndex;
 					if ((newStateIndex = GetIndexOf(newState)) == -1){ // does this state already exist?

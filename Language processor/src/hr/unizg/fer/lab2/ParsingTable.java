@@ -13,7 +13,15 @@ public class ParsingTable {
 		FillActionTable(p, dfa);
 		FillNewStateTable(p, dfa);
 	}
-
+	
+	public List<PTCell_Action> GetCellsAction(){
+		return mCellsA;
+	}
+	
+	public List<PTCell_NewState> GetCellsNewState(){
+		return mCellsNS;
+	}
+	
 	public void FillActionTable(Parser p, DFA dfa){
 		// Filling the action table (book: page 150)
 		// for every input terminal symbol
@@ -27,10 +35,11 @@ public class ParsingTable {
 				StateDFA newState = dfa.GetTransition(tempS, i);
 				if (newState != null){
 					PTCell_Action tempC = new PTCell_Action();
-					tempC.mInput = i;
+					tempC.mInputIndex = i;
 					tempC.mStateIndex = j;
 					tempC.mActionType = ActionType.Move;
-					tempC.mActionSpecificValue = dfa.GetStates().indexOf(newState); // index of a new state
+					tempC.mActionSpecificValue_a = dfa.GetStates().indexOf(newState); // index of a new state
+					tempC.mActionSpecificValue_b = -1; // does not have one.
 					mCellsA.add(tempC);
 					}
 				
@@ -39,10 +48,11 @@ public class ParsingTable {
 					Item tempI = tempS.mItems.get(k);
 					if (tempI.mBEGINS_Set.contains(i) && tempI.mItemDotPosition == tempI.mRightSymbolsIndices.size()){
 						PTCell_Action tempC = new PTCell_Action();
-						tempC.mInput = i;
+						tempC.mInputIndex = i;
 						tempC.mStateIndex = j;
 						tempC.mActionType = ActionType.Reduce;
-						tempC.mActionSpecificValue = tempI.mItemDotPosition; // number of symbols to remove from stack.
+						tempC.mActionSpecificValue_a = tempI.mItemDotPosition; // number of symbols to remove from stack
+						tempC.mActionSpecificValue_b = tempI.mLeftNonTerminalSymbolIndex; // <-- reduce to this
 						mCellsA.add(tempC);
 						}
 					}
@@ -61,10 +71,11 @@ public class ParsingTable {
 						tempI.mItemDotPosition == tempI.mRightSymbolsIndices.size() &&
 						tempI.mLeftNonTerminalSymbolIndex != p.GetInitialNonTerminalSymbol()){
 					PTCell_Action tempC = new PTCell_Action();
-					tempC.mInput = Utilities.EOFTerminalSymbolCode;
+					tempC.mInputIndex = Utilities.EOFTerminalSymbolCode;
 					tempC.mStateIndex = j;
 					tempC.mActionType = ActionType.Reduce;
-					tempC.mActionSpecificValue = tempI.mItemDotPosition; // number of symbols to remove from stack.
+					tempC.mActionSpecificValue_a = tempI.mItemDotPosition; // number of symbols to remove from stack
+					tempC.mActionSpecificValue_b = tempI.mLeftNonTerminalSymbolIndex; // <-- reduce to this
 					mCellsA.add(tempC);
 				}
 			}
@@ -76,10 +87,11 @@ public class ParsingTable {
 						tempI.mItemDotPosition == tempI.mRightSymbolsIndices.size() &&
 						tempI.mLeftNonTerminalSymbolIndex == p.GetInitialNonTerminalSymbol()){
 					PTCell_Action tempC = new PTCell_Action();
-					tempC.mInput = Utilities.EOFTerminalSymbolCode;
+					tempC.mInputIndex = Utilities.EOFTerminalSymbolCode;
 					tempC.mStateIndex = j;
 					tempC.mActionType = ActionType.Accept;
-					tempC.mActionSpecificValue = -1; // does not have one.
+					tempC.mActionSpecificValue_a = -1; // does not have one.
+					tempC.mActionSpecificValue_b = -1; // does not have one.
 					mCellsA.add(tempC);
 				}
 			}
@@ -99,7 +111,7 @@ public class ParsingTable {
 				StateDFA newState = dfa.GetTransition(tempS, i);
 				if (newState != null){
 					PTCell_NewState tempC = new PTCell_NewState();
-					tempC.mInput = i;
+					tempC.mInputIndex = i;
 					tempC.mStateIndex = j;
 					tempC.mActionSpecificValue = dfa.GetStates().indexOf(newState); // index of a new state
 					mCellsNS.add(tempC);

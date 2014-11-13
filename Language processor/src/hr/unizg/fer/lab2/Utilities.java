@@ -49,15 +49,16 @@ enum ActionType {Move, Reduce, Accept};
 
 // parsing action table cell
 class PTCell_Action{
-	int mInput;
+	int mInputIndex;
 	int mStateIndex;
 	ActionType mActionType;
-	int mActionSpecificValue;
+	int mActionSpecificValue_a;
+	int mActionSpecificValue_b;
 }
 
 //parsing new state table cell
 class PTCell_NewState{
-	int mInput;
+	int mInputIndex;
 	int mStateIndex;
 	// there is just one action possible -> Put()
 	int mActionSpecificValue;
