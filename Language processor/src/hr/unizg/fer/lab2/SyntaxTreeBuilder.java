@@ -40,6 +40,7 @@ class Cell_Action{
 	ActionType mActionType;
 	int mActionSpecificValue_a;
 	int mActionSpecificValue_b;
+	int mProductionPriroty;
 }
 
 class Cell_NewState{
@@ -67,13 +68,30 @@ public class SyntaxTreeBuilder {
 		Reset();
 	}
 	
-	public void AddActionCell(int inputIndex, int stateIndex, ActionType actionType, int actionSpecificValue_a, int actionSpecificValue_b){
+	public void AddActionCell(int inputIndex, int stateIndex, ActionType actionType, int actionSpecificValue_a, int actionSpecificValue_b, int productionPriroty){
 		TableKey tempTK = new TableKey(inputIndex, stateIndex);
-		Cell_Action tempCA = new Cell_Action();
-		tempCA.mActionType = actionType;
-		tempCA.mActionSpecificValue_a = actionSpecificValue_a;
-		tempCA.mActionSpecificValue_b = actionSpecificValue_b;
-		mCellsA.put(tempTK, tempCA);
+		Cell_Action newCA = new Cell_Action();
+		newCA.mActionType = actionType;
+		newCA.mActionSpecificValue_a = actionSpecificValue_a;
+		newCA.mActionSpecificValue_b = actionSpecificValue_b;
+		newCA.mProductionPriroty = productionPriroty;
+		
+		Cell_Action oldCA = mCellsA.get(tempTK);
+		if (oldCA == null) {
+			mCellsA.put(tempTK, newCA);
+			return;
+		}
+		// Move has advantage over reduce.
+		if (newCA.mActionType == ActionType.Move && oldCA.mActionType == ActionType.Reduce){
+			mCellsA.put(tempTK, newCA);
+			return;
+		}
+		// If there is contradiction between two reduce actions, use the one with greater priority (smaller number).
+		if (newCA.mActionType == ActionType.Reduce && oldCA.mActionType == ActionType.Reduce &&
+				newCA.mProductionPriroty < oldCA.mProductionPriroty){
+			mCellsA.put(tempTK, newCA);
+			return;
+		}
 	}
 	
 	public void AddNewStateCell(int inputIndex, int stateIndex, int actionSpecificValue){

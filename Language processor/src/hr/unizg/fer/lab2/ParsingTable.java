@@ -6,6 +6,7 @@ import java.util.List;
 public class ParsingTable {
 
 	private List<PTCell_Action> mCellsA = new ArrayList<PTCell_Action>();
+	private List<Integer> mCellsA_Priority = new ArrayList<Integer>();
 	private List<PTCell_NewState> mCellsNS = new ArrayList<PTCell_NewState>();
 	
 	public ParsingTable(Parser p, DFA dfa){
@@ -16,6 +17,10 @@ public class ParsingTable {
 	
 	public List<PTCell_Action> GetCellsAction(){
 		return mCellsA;
+	}
+	
+	public List<Integer> GetCellsAction_Priority(){
+		return mCellsA_Priority;
 	}
 	
 	public List<PTCell_NewState> GetCellsNewState(){
@@ -41,6 +46,7 @@ public class ParsingTable {
 					tempC.mActionSpecificValue_a = dfa.GetStates().indexOf(newState); // index of a new state
 					tempC.mActionSpecificValue_b = -1; // does not have one.
 					mCellsA.add(tempC);
+					mCellsA_Priority.add(-1); // irrelevant 
 					}
 				
 				// 3.b) from the book
@@ -54,6 +60,7 @@ public class ParsingTable {
 						tempC.mActionSpecificValue_a = tempI.mItemDotPosition; // number of symbols to remove from stack
 						tempC.mActionSpecificValue_b = tempI.mLeftNonTerminalSymbolIndex; // <-- reduce to this
 						mCellsA.add(tempC);
+						mCellsA_Priority.add(p.GetProductions().get(tempI.mProductionIndex).mProductionPriority);
 						}
 					}
 				}
@@ -77,6 +84,7 @@ public class ParsingTable {
 					tempC.mActionSpecificValue_a = tempI.mItemDotPosition; // number of symbols to remove from stack
 					tempC.mActionSpecificValue_b = tempI.mLeftNonTerminalSymbolIndex; // <-- reduce to this
 					mCellsA.add(tempC);
+					mCellsA_Priority.add(p.GetProductions().get(tempI.mProductionIndex).mProductionPriority);
 				}
 			}
 					
@@ -93,6 +101,7 @@ public class ParsingTable {
 					tempC.mActionSpecificValue_a = -1; // does not have one.
 					tempC.mActionSpecificValue_b = -1; // does not have one.
 					mCellsA.add(tempC);
+					mCellsA_Priority.add(-1); // irrelevant 
 				}
 			}
 		}

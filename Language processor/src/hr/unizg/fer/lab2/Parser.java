@@ -10,6 +10,7 @@ public class Parser {
 	public class Production{
 		int mLeftNonTerminalSymbolIndex;
 		List<Integer> mRightSymbolsIndices = new ArrayList<Integer>();
+		int mProductionPriority; // this is important for Reduce/Reduce contradiction.
 	}
 	
 	public class Symbol{
@@ -71,12 +72,14 @@ public class Parser {
 		}
 		
 		Production temp = null;
+		int productionPriority = 1;
 		int currentLeftSideSymIndex = 0;
 		while(line != null){
 			if (line.substring(0,1).equals("<")){ // should we change production's left side
 				currentLeftSideSymIndex = FindSymbolIndex(line);
 			}else{ // or work on the current one
 				temp = new Production();
+				temp.mProductionPriority = productionPriority++;
 				temp.mLeftNonTerminalSymbolIndex = currentLeftSideSymIndex;
 				FillProduction(temp, line);
 				mProductions.add(temp);
@@ -95,6 +98,7 @@ public class Parser {
 		temp.mLeftNonTerminalSymbolIndex = 0;
 		temp.mRightSymbolsIndices = new ArrayList<Integer>();
 		temp.mRightSymbolsIndices.add(1);
+		temp.mProductionPriority = 0;
 		mProductions.add(temp);	
 	}
 	

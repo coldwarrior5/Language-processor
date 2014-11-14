@@ -40,7 +40,8 @@ public class GSA {
 					pt.GetCellsAction().get(i).mStateIndex + " " +
 					GetNum(pt.GetCellsAction().get(i).mActionType) + " " +
 					pt.GetCellsAction().get(i).mActionSpecificValue_a + " " +
-					pt.GetCellsAction().get(i).mActionSpecificValue_b);
+					pt.GetCellsAction().get(i).mActionSpecificValue_b + " " +
+					pt.GetCellsAction_Priority().get(i));
 		}
 		for (int i = 0; i < pt.GetCellsNewState().size(); ++i){
 			outNewStateTable.println(pt.GetCellsNewState().get(i).mInputIndex + " " +

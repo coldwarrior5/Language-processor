@@ -64,7 +64,11 @@ public class SA{
 			int actionSpecificValue_b = Integer.parseInt(line.substring(0, i - 1));
 			line = line.substring(i);
 			
-			mSTB.AddActionCell(inputIndex, stateIndex, actionType, actionSpecificValue_a, actionSpecificValue_b);
+			i = line.indexOf(" ") + 1;
+			int productionPriority = Integer.parseInt(line.substring(0, i - 1));
+			line = line.substring(i);
+			
+			mSTB.AddActionCell(inputIndex, stateIndex, actionType, actionSpecificValue_a, actionSpecificValue_b, productionPriority);
 	    }
 	    br.close();
 		

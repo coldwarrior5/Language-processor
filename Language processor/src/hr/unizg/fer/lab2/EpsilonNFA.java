@@ -34,7 +34,7 @@ public class EpsilonNFA {
 				List<Integer> b_set = new ArrayList<Integer>();
 				b_set.add(Utilities.EOFTerminalSymbolCode);
 				StateNFA s = CreateState(p.GetProductions().get(i).mLeftNonTerminalSymbolIndex,
-						p.GetProductions().get(i).mRightSymbolsIndices, true, 0, b_set);
+						p.GetProductions().get(i).mRightSymbolsIndices, true, 0, b_set, i);
 				mStates.add(s);
 			}
 		}
@@ -92,13 +92,14 @@ public class EpsilonNFA {
 		}
 	}
 	
-	private StateNFA CreateState(int leftNonTerminalSymbol, List<Integer> rightSymbols, Boolean isInitial, int itemDotIndex, List<Integer> b_set){
+	private StateNFA CreateState(int leftNonTerminalSymbol, List<Integer> rightSymbols, Boolean isInitial, int itemDotIndex, List<Integer> b_set, int productionIndex){
 		// States are actually items from the productions from the grammar. 
 		StateNFA s = new StateNFA();
 		s.mIsInitial = isInitial;
 		s.mItem = new Item();
 		s.mItem.mLeftNonTerminalSymbolIndex = leftNonTerminalSymbol;
 		s.mItem.mItemDotPosition = itemDotIndex;
+		s.mItem.mProductionIndex = productionIndex;
 		// copy mRightSymbols array
 		for (int i = 0; i < rightSymbols.size(); ++i){
 			s.mItem.mRightSymbolsIndices.add(rightSymbols.get(i));
@@ -152,7 +153,7 @@ public class EpsilonNFA {
 		if (state.mItem.mRightSymbolsIndices.size() != state.mItem.mItemDotPosition){ // Does this state represent a complete item.
 			// create state, create transition, recursive call
 			StateNFA newState = CreateState(state.mItem.mLeftNonTerminalSymbolIndex, state.mItem.mRightSymbolsIndices,
-					false, state.mItem.mItemDotPosition + 1, state.mItem.mBEGINS_Set);
+					false, state.mItem.mItemDotPosition + 1, state.mItem.mBEGINS_Set, state.mItem.mProductionIndex);
 			int newStateIndex;
 			if ((newStateIndex = GetIndexOf(newState)) == -1){ // does this state already exist?
 				mStates.add(newState); // if not: add it
@@ -185,7 +186,7 @@ public class EpsilonNFA {
 							if (!b_set.contains(state.mItem.mBEGINS_Set.get(j))) b_set.add(state.mItem.mBEGINS_Set.get(j));
 					}
 					StateNFA newState = CreateState(symbolIndex, mParser.GetProductions().get(i).mRightSymbolsIndices,
-							(symbolIndex == mParser.GetInitialNonTerminalSymbol()), 0, b_set);
+							(symbolIndex == mParser.GetInitialNonTerminalSymbol()), 0, b_set, i);
 					int newStateIndex;
 					if ((newStateIndex = GetIndexOf(newState)) == -1){ // does this state already exist?
 						mStates.add(newState); // if not: add it
