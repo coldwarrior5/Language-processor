@@ -47,6 +47,8 @@ class StateDFA{
 
 enum ActionType {Move, Reduce, Accept};
 
+enum ReturnType {Void, Int, Char}
+
 // parsing action table cell
 class PTCell_Action{
 	int mInputIndex;
