@@ -13,7 +13,8 @@ public class SemantickiAnalizator {
 	
 	public static void main(String[] args) {
 
-		
+		boolean check=checkType("1223");
+		System.out.println(check);
 		
 	}
 
