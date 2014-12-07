@@ -61,11 +61,6 @@ class Array{
 }
 
 public class SemantickiAnalizator {
-
-	private static String mInput;
-	private static int mCurrentLine;
-	private static int mLastProcessedPos;
-	private static int mReaderPos;
 	
 	protected static boolean checkInt(String in){
 		try{
@@ -77,11 +72,12 @@ public class SemantickiAnalizator {
 	}
 	
 	public static void main(String[] args) {
-
-		mLastProcessedPos = -1;
-		mCurrentLine = 1;
 		
-		//mInput = Utilities.ReadStringFromInput();
+		StablastaTablicaZnakova stz = new StablastaTablicaZnakova();
+		Parser p = new Parser();
+		Izrazi.mSTZ = NaredbenaStrukturaPrograma.mSTZ = DeklaracijeIDefinicije.mSTZ = stz;
+		Izrazi.mParser = NaredbenaStrukturaPrograma.mParser = DeklaracijeIDefinicije.mParser = p;
+		
 		
 		System.out.println("Checking if checkInt works");
 		boolean check=checkInt("1223");
@@ -127,5 +123,4 @@ public class SemantickiAnalizator {
 	         System.out.println(element);
 	      }
 	}
-
 }

@@ -15,12 +15,6 @@ class LexicalRule{
 	int mReturnAt;
 }
 
-class LA_OutputElement{
-	String mUniformToken;
-	int mLine;
-	String mLexicUint;
-}
-
 class Item{
 	int mLeftNonTerminalSymbolIndex;
 	int mItemDotPosition; // must be in interval [0, mRightSymbols.size()]
