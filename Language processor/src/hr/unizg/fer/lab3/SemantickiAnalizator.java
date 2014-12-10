@@ -73,11 +73,12 @@ public class SemantickiAnalizator {
 	
 	public static void main(String[] args) {
 		
+		Boolean jo = Utilities.ProvjeriNizConstChar("hau\\\"odfh\\nsf");
+		
 		StablastaTablicaZnakova stz = new StablastaTablicaZnakova();
 		Parser p = new Parser();
 		Izrazi.mSTZ = NaredbenaStrukturaPrograma.mSTZ = DeklaracijeIDefinicije.mSTZ = stz;
 		Izrazi.mParser = NaredbenaStrukturaPrograma.mParser = DeklaracijeIDefinicije.mParser = p;
-		
 		
 		System.out.println("Checking if checkInt works");
 		boolean check=checkInt("1223");

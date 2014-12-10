@@ -5,9 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-enum Tip {_int, _char, _funkcija};
+enum Tip {_int, _char, _funkcija, _void};
 
 class TipFunkcija{
+	Tip mPov; // povratna vrijednost funkcije
+	List<Tip> mParam = new ArrayList<Tip>(); // parametri funkcije
 }
 
 class ClanTabliceZnakova{
