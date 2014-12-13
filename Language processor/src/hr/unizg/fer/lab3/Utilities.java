@@ -10,8 +10,11 @@ class UniformniZnak{
 	public UniformniZnak(String linija){
 		linija += " "; // lakse je ovako rascjepati liniju
 		mNaziv = linija.substring(0, linija.indexOf(' '));
-		mRedak = Integer.parseInt(linija.substring(linija.indexOf(' '), linija.indexOf(' ', 1)));
-		mLeksickaJedinka = linija.substring(linija.indexOf(' ', 1), linija.indexOf(' ', 2));
+		linija = linija.substring(linija.indexOf(' ') + 1);
+		mRedak = Integer.parseInt(linija.substring(0, linija.indexOf(' ')));
+		linija = linija.substring(linija.indexOf(' ') + 1);
+		linija = linija.substring(0, linija.indexOf(' '));
+		mLeksickaJedinka = linija;
 	}
 	
 	public String FormatZaIspis(){
@@ -29,7 +32,35 @@ class UniformniZnak{
 	}
 }
 
+class Tip_LIzraz_Const_Niz{
+	Tip mTip;	
+	TipFunkcija mFun = null; // razlicito od null ako je (mTip == Tip._funkcija).
+	Boolean mL_izraz;
+	Boolean mConst;
+	Boolean mNiz;
+	}
+
+class Tip_Const{
+	Tip mTip;	
+	Boolean mConst;
+	}
+
+class Tip_Const_Niz_BrEle_TipFunk{
+	Tip mTip;	
+	Boolean mConst;
+	Boolean mNiz;
+	int mBrElemenata; // potrebno ako je niz
+	TipFunkcija mTipFunkcija; // null ako nije mTip == Tip._funkcija
+	}
+
+class Tip_LIzraz_Const_Niz_Ime{
+	Tip_LIzraz_Const_Niz mT;
+	String mIme;
+	}
+
 public class Utilities {
+	
+	public static Boolean mWriteToOutputEnabled = true;
 	
 	// l --> d
 	public static Boolean ImplicitnaPretvorbaMoguca(Tip l, Tip d){
@@ -41,6 +72,20 @@ public class Utilities {
 	public static Boolean JeBrojevniTip(Tip a){
 		if (a == Tip._char || a == Tip._int) return true;
 		else return false;
+	}
+	
+	public static Boolean FunkcijeIste(TipFunkcija f1, TipFunkcija f2){
+		if (f1.mPov != f2.mPov) return false;
+		if (f1.mParam.size() != f2.mParam.size()) return false;
+		for (int i = 0; i < f1.mParam.size(); ++i)
+			if (f1.mParam.get(i) != f2.mParam.get(i)) return false;
+		return true;
+	}
+	
+	public static int VratiBrojZnakovaIz_NIZ_ZNAKOVA(String niz_znakova){
+		
+		
+		return 0;
 	}
 	
 	public static String ReadStringFromInput(){
@@ -67,8 +112,14 @@ public class Utilities {
 		return input;
 	}
 	
-	public static void WriteStringLineToOutput(String str){
+	public static void WriteStringLineToOutputAndExit(String str){
+		if (!mWriteToOutputEnabled) return;
 		System.out.println(str);
+		System.exit(0);
+	}
+	
+	public static void WriteStringLineToStdErr(String str){
+		System.err.println(str);
 	}
 
 	public static boolean ProvjeriInt(String in){
@@ -98,19 +149,25 @@ public class Utilities {
 	
 	public static boolean ProvjeriNizConstChar(String in){
 		
-		int index = -1;
+		int index = 0;
+		int length = in.length();
 		while(true){
-			index = in.indexOf('\\', index + 1);
-			if (index != -1){
-				if ((index == (in.length() - 1) && 
+			index = in.indexOf('\\', index);
+			if (index == (length - 1)) 
+				return false; // nesmije '/' biti zadnji znak
+			else if (index != -1){
+				if ((index != (length - 1) && 
 					(in.charAt(index + 1) != 't') &&
 					(in.charAt(index + 1) != 'n') &&
 					(in.charAt(index + 1) != '0') &&
 					(in.charAt(index + 1) != '\'') &&
 					(in.charAt(index + 1) != '"') &&
 					(in.charAt(index + 1) != '\\'))) return false;
-			}
-			else break;
+				else
+					index += 2; // vazno u slucaju '//'
+			} 
+			else 
+				break;
 		}
 		
 		return true;

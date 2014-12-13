@@ -2,6 +2,7 @@ package hr.unizg.fer.lab3;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -28,13 +29,15 @@ class TablicaZnakova{
 class Cvor{ // odredjuje djelokrug deklaracija
 	TablicaZnakova mTablicaZnakova = new TablicaZnakova();
 	Cvor mRoditelj; // cvor koji predstavlja ugnijezdujuci blok (ako takav postoji)
+	ClanTabliceZnakova mFunkcija; // funkcija kojoj je dodijeljen djelokrug. Ako je djelokrug sam za sebe tada mFunkcija = null
 }
 
 public class StablastaTablicaZnakova {
 
 	private Cvor mPocetni;
 	private Cvor mTrenutacni;
-	private List<ClanTabliceZnakova> mNedefiniraniZnakovi = new ArrayList<ClanTabliceZnakova>();
+	private List<ClanTabliceZnakova> mNedefiniraniZnakovi_ct = new ArrayList<ClanTabliceZnakova>();
+	private List<String> mNedefiniraniZnakovi_idn = new ArrayList<String>();
 	
 	public StablastaTablicaZnakova(){
 		mPocetni = new Cvor();
@@ -42,19 +45,70 @@ public class StablastaTablicaZnakova {
 		mTrenutacni = mPocetni;
 	}
 	
+	public void ProvjeraNakonObilaska(){
+		// 1.
+		TipFunkcija f = new TipFunkcija();
+		if (!JeliFunkcijaDefinirana("main", f))
+			Utilities.WriteStringLineToOutputAndExit("main");
+		
+		// 2.
+	}
+	
 	public void DodajClanUTablicuZnakova(String identifikator, ClanTabliceZnakova clanTablice){
 		mTrenutacni.mTablicaZnakova.mTablica.put(identifikator, clanTablice);
 		
-		// rijesiti nedefinirane
+		// dodati u nedefinirane ako je potrebno
+		if (clanTablice.mDefinirano == false){
+			mNedefiniraniZnakovi_ct.add(clanTablice);
+			mNedefiniraniZnakovi_idn.add(identifikator);
+		}
+	}
+	
+	public void Definiran(String identifikator){
+		for (Iterator<String> it1 = mNedefiniraniZnakovi_idn.iterator(), it2 = mNedefiniraniZnakovi_idn.iterator(); it2.hasNext();){
+			if (it1.equals(identifikator)){ it1.remove(); it2.remove(); }
+			else { it1.next(); it2.next(); }
+		}
 	}
 	
 	public ClanTabliceZnakova DohvatiClanIzTabliceZnakova(String identifikator){
+		Cvor privCvor = mTrenutacni;
+		ClanTabliceZnakova privClan = privCvor.mTablicaZnakova.mTablica.get(identifikator);
+		// pretrazuj roditelje sve dok ne dodjes do globalnog djelokruga
+		while (privClan == null){
+			if (privCvor.mRoditelj == null) return null;
+			privCvor = privCvor.mRoditelj;
+			privClan = privCvor.mTablicaZnakova.mTablica.get(identifikator);
+		}
+		return privClan;
+	}
+	
+	public ClanTabliceZnakova DohvatiClanIzTabliceZnakovaSamoTrenutacnogDjelokruga(String identifikator){
 		return mTrenutacni.mTablicaZnakova.mTablica.get(identifikator);
 	}
 	
-	public void  UdjiUNoviCvor(){
+	// vraca deklaraciju funkcije u kojoj se STZ trenutacno nalazi
+	public TipFunkcija VratiDeklaracijuFunkcijeDjelokruga(){
+		Cvor priv = mTrenutacni;
+		while (priv.mFunkcija == null) priv = priv.mRoditelj;
+		// kad smo nasli onda:
+		if (priv.mFunkcija.mTip != Tip._funkcija) 
+			Utilities.WriteStringLineToStdErr("Greska u: VratiDeklaracijuFunkcije();");
+		return priv.mFunkcija.mTipFunkcija;
+	}
+	
+	public Boolean JeliFunkcijaDefinirana(String identifikator, TipFunkcija tipFun){
+		ClanTabliceZnakova cl = mPocetni.mTablicaZnakova.mTablica.get(identifikator); // definicija moze biti samo u globalnom djelokrugu
+		if (cl == null) return false;
+		else if (cl.mTip != Tip._funkcija) return false;
+		else if (!Utilities.FunkcijeIste(tipFun, cl.mTipFunkcija)) return false;
+		else return true;
+	}
+	
+	public void  UdjiUNoviCvor(ClanTabliceZnakova funkcija){
 		Cvor noviC = new Cvor();
 		noviC.mRoditelj = mTrenutacni;
+		noviC.mFunkcija = funkcija;
 		mTrenutacni = noviC;
 	}
 	

@@ -13,18 +13,19 @@ public class Parser {
 	
 	private List<String> mSljedRoditeljaTrenutacnogCvora = new ArrayList<String>();
 	private String mZadnjeProcitaniCvor;
+	private String mProviriVrijednost;
 	private int mDubinaZadnjeProcitanogCvora;
 	
 	public Parser(){
 		mUlaz = Utilities.ReadStringFromInput();
 	    mLista = Arrays.asList(mUlaz.split("\n"));
 	    mIt = mLista.iterator();
-	    
+	    mProviriVrijednost = mIt.next();
 	    mDubinaZadnjeProcitanogCvora = 0;
 	}
 	
 	public String ParsirajNovuLiniju(){
-		String linija = mIt.next();
+		String linija = mProviriVrijednost;
 		int brPraznihMjesta = 0; // ili dubina cvora u stablu
 		for(brPraznihMjesta = 0; linija.charAt(brPraznihMjesta) == ' '; ++brPraznihMjesta);
 		
@@ -39,10 +40,20 @@ public class Parser {
 		
 		mDubinaZadnjeProcitanogCvora = brPraznihMjesta;
 		mZadnjeProcitaniCvor = linija;
+		mProviriVrijednost = (mIt.hasNext()) ? mIt.next() : null;
 		return linija;
 	}
 	
 	public List<String> DohvatiSljedRoditelja(){
 		return mSljedRoditeljaTrenutacnogCvora;
+	}
+	
+	public String DohvatiProviriVrijednost(){
+		if (mProviriVrijednost != null){
+			int brPraznihMjesta = 0;
+			for(brPraznihMjesta = 0; mProviriVrijednost.charAt(brPraznihMjesta) == ' '; ++brPraznihMjesta);
+			return mProviriVrijednost.substring(brPraznihMjesta, mProviriVrijednost.length());
+		}
+		else return null;
 	}
 }
