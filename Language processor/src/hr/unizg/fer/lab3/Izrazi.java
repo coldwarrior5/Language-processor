@@ -141,12 +141,13 @@ public class Izrazi {
 					return vrati;
 				}
 				if (linija.equals("<lista_argumenata>")){ // lista_argumenata --> pov
-					List<Tip_LIzraz_Const_Niz> priv2 = PROVJERI_lista_argumenata();
+					List<Tip_LIzraz_Const_Niz> lista_argumenata = PROVJERI_lista_argumenata();
 					
 					Boolean arg_Par_OK = true;
-					if (postfiks_izraz.mFun.mParam.size() == priv2.size()){
-						for (int i = 0; i < priv2.size(); ++i) 
-							if (!Utilities.ImplicitnaPretvorbaMoguca(priv2.get(i).mTip, postfiks_izraz.mFun.mParam.get(i)) || priv2.get(i).mNiz)
+					if (postfiks_izraz.mFun.mParam.size() == lista_argumenata.size()){
+						for (int i = 0; i < lista_argumenata.size(); ++i) 
+							if (!Utilities.ImplicitnaPretvorbaMoguca(lista_argumenata.get(i).mTip, postfiks_izraz.mFun.mParam.get(i).mTip) ||
+									(lista_argumenata.get(i).mNiz != postfiks_izraz.mFun.mParam.get(i).mNiz))
 								arg_Par_OK = false;
 					}else arg_Par_OK = false;
 					

@@ -45,6 +45,12 @@ class Tip_Const{
 	Boolean mConst;
 	}
 
+class Tip_Const_Niz{
+	Tip mTip;	
+	Boolean mConst;
+	Boolean mNiz;
+	}
+
 class Tip_Const_Niz_BrEle_TipFunk{
 	Tip mTip;	
 	Boolean mConst;

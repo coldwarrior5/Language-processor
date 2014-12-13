@@ -15,6 +15,7 @@ public class Parser {
 	private String mZadnjeProcitaniCvor;
 	private String mProviriVrijednost;
 	private int mDubinaZadnjeProcitanogCvora;
+	private int mProcitanoRedova;
 	
 	public Parser(){
 		mUlaz = Utilities.ReadStringFromInput();
@@ -22,6 +23,7 @@ public class Parser {
 	    mIt = mLista.iterator();
 	    mProviriVrijednost = mIt.next();
 	    mDubinaZadnjeProcitanogCvora = 0;
+	    mProcitanoRedova = 0;
 	}
 	
 	public String ParsirajNovuLiniju(){
@@ -39,6 +41,7 @@ public class Parser {
 		}
 		
 		mDubinaZadnjeProcitanogCvora = brPraznihMjesta;
+		++mProcitanoRedova;
 		mZadnjeProcitaniCvor = linija;
 		mProviriVrijednost = (mIt.hasNext()) ? mIt.next() : null;
 		return linija;
@@ -55,5 +58,9 @@ public class Parser {
 			return mProviriVrijednost.substring(brPraznihMjesta, mProviriVrijednost.length());
 		}
 		else return null;
+	}
+	
+	public int DohvatiProcitanoRedova(){
+		return mProcitanoRedova;
 	}
 }

@@ -10,7 +10,7 @@ enum Tip {_int, _char, _funkcija, _void};
 
 class TipFunkcija{
 	Tip mPov; // povratna vrijednost funkcije
-	List<Tip> mParam = new ArrayList<Tip>(); // parametri funkcije
+	List<Tip_Const_Niz> mParam = new ArrayList<Tip_Const_Niz>(); // parametri funkcije
 }
 
 class ClanTabliceZnakova{
@@ -48,10 +48,14 @@ public class StablastaTablicaZnakova {
 	public void ProvjeraNakonObilaska(){
 		// 1.
 		TipFunkcija f = new TipFunkcija();
+		f.mPov = Tip._int;
+		// f.mParam mora  ostat na nula clanova
 		if (!JeliFunkcijaDefinirana("main", f))
 			Utilities.WriteStringLineToOutputAndExit("main");
 		
 		// 2.
+		if (mNedefiniraniZnakovi_ct.size() != 0)
+			Utilities.WriteStringLineToOutputAndExit("funkcija");
 	}
 	
 	public void DodajClanUTablicuZnakova(String identifikator, ClanTabliceZnakova clanTablice){
@@ -65,7 +69,9 @@ public class StablastaTablicaZnakova {
 	}
 	
 	public void Definiran(String identifikator){
-		for (Iterator<String> it1 = mNedefiniraniZnakovi_idn.iterator(), it2 = mNedefiniraniZnakovi_idn.iterator(); it2.hasNext();){
+		Iterator<String> it1;
+		Iterator<ClanTabliceZnakova> it2;
+		for (it1 = mNedefiniraniZnakovi_idn.iterator(), it2 = mNedefiniraniZnakovi_ct.iterator(); it2.hasNext();){
 			if (it1.equals(identifikator)){ it1.remove(); it2.remove(); }
 			else { it1.next(); it2.next(); }
 		}

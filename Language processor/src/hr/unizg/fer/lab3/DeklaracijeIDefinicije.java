@@ -39,7 +39,10 @@ public class DeklaracijeIDefinicije {
 				if (lista_parametara.size() != clTablice.mTipFunkcija.mParam.size()) bezGreskeZasad = false;
 				else {
 					for (int i = 0; i < lista_parametara.size(); ++i)
-						if (lista_parametara.get(i).mT.mTip != clTablice.mTipFunkcija.mParam.get(i) || lista_parametara.get(i).mT.mNiz){
+						if (lista_parametara.get(i).mT.mTip != clTablice.mTipFunkcija.mParam.get(i).mTip ||
+								lista_parametara.get(i).mT.mNiz != clTablice.mTipFunkcija.mParam.get(i).mNiz ||
+								lista_parametara.get(i).mT.mConst != clTablice.mTipFunkcija.mParam.get(i).mConst ||
+								lista_parametara.get(i).mT.mNiz){
 							bezGreskeZasad = false;
 							break;
 						}
@@ -62,8 +65,13 @@ public class DeklaracijeIDefinicije {
 			clTab.mDefinirano = true;
 			clTab.mTipFunkcija = new TipFunkcija();
 			clTab.mTipFunkcija.mPov = ime_tipa.mTip;
-			for (int i = 0; i < lista_parametara.size(); ++i)
-				clTab.mTipFunkcija.mParam.add(lista_parametara.get(i).mT.mTip);
+			for (int i = 0; i < lista_parametara.size(); ++i){
+				Tip_Const_Niz tcn = new Tip_Const_Niz();
+				tcn.mTip = lista_parametara.get(i).mT.mTip;
+				tcn.mConst = lista_parametara.get(i).mT.mConst;
+				tcn.mNiz = lista_parametara.get(i).mT.mNiz;
+				clTab.mTipFunkcija.mParam.add(tcn);
+			}
 			mSTZ.DodajClanUTablicuZnakova(uz_idn.mLeksickaJedinka, clTab);
 			mSTZ.Definiran(uz_idn.mLeksickaJedinka);
 			
@@ -185,9 +193,10 @@ public class DeklaracijeIDefinicije {
 		
 		vrati = new Tip_LIzraz_Const_Niz_Ime();
 		vrati.mIme = uz_idn.mLeksickaJedinka;
+		vrati.mT = new Tip_LIzraz_Const_Niz();
 		vrati.mT.mConst = ime_tipa.mConst;
 		vrati.mT.mFun = null;
-		vrati.mT.mL_izraz = true;
+		vrati.mT.mL_izraz = !ime_tipa.mConst;
 		vrati.mT.mNiz = jeNiz;
 		vrati.mT.mTip = ime_tipa.mTip;
 		
@@ -248,14 +257,14 @@ public class DeklaracijeIDefinicije {
 		linija = mParser.DohvatiProviriVrijednost();
 		Boolean pogreska = false, pridruzivanje = false;
 		UniformniZnak uz_op_pridruzi = UniformniZnak.SigurnoStvaranje(linija);
-		if (uz_op_pridruzi != null && uz_op_pridruzi.mNaziv.equals("P_PRIDRUZI")){
+		if (uz_op_pridruzi != null && uz_op_pridruzi.mNaziv.equals("OP_PRIDRUZI")){
 			pridruzivanje = true;
-			linija = mParser.ParsirajNovuLiniju(); // ucitaj P_PRIDRUZI
+			linija = mParser.ParsirajNovuLiniju(); // ucitaj OP_PRIDRUZI
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <inicijalizator>
 			List<Tip_LIzraz_Const_Niz> inicijalizator = PROVJERI_inicijalizator();
 			
 			if (Utilities.JeBrojevniTip(izravni_deklarator.mTip) && !izravni_deklarator.mNiz){ // nije niz
-				if (!Utilities.ImplicitnaPretvorbaMoguca(izravni_deklarator.mTip, Tip._int)) pogreska = true;
+				if (!Utilities.ImplicitnaPretvorbaMoguca(inicijalizator.get(0).mTip, izravni_deklarator.mTip)) pogreska = true;
 			}else if (Utilities.JeBrojevniTip(izravni_deklarator.mTip) && izravni_deklarator.mNiz){ // je niz
 				if (izravni_deklarator.mBrElemenata < inicijalizator.size()) pogreska = true;
 				 // svaki clan u polju iniccijalizacije se mora implicitno moc pretvorit u tip izravnog_deklaratora
@@ -329,8 +338,13 @@ public class DeklaracijeIDefinicije {
 				vrati.mBrElemenata = -1; // nije polje
 				noviCl.mTipFunkcija = vrati.mTipFunkcija = new TipFunkcija();
 				vrati.mTipFunkcija.mPov = ime_tipa.mTip;
-				for (int i = 0; i < lista_parametara.size(); ++i)
-					vrati.mTipFunkcija.mParam.add(lista_parametara.get(i).mT.mTip);
+				for (int i = 0; i < lista_parametara.size(); ++i){
+					Tip_Const_Niz tcn = new Tip_Const_Niz();
+					tcn.mTip = lista_parametara.get(i).mT.mTip;
+					tcn.mConst = lista_parametara.get(i).mT.mConst;
+					tcn.mNiz = lista_parametara.get(i).mT.mNiz;
+					vrati.mTipFunkcija.mParam.add(tcn);
+				}
 				noviCl.mNiz = vrati.mNiz = false;
 				noviCl.mDefinirano = mSTZ.JeliFunkcijaDefinirana(uz_idn.mLeksickaJedinka, noviCl.mTipFunkcija);
 				
@@ -381,7 +395,8 @@ public class DeklaracijeIDefinicije {
 			Tip_Const_Niz_BrEle_TipFunk vrati = new Tip_Const_Niz_BrEle_TipFunk();
 			ClanTabliceZnakova noviCl = new ClanTabliceZnakova();
 			noviCl.mTip = vrati.mTip = ime_tipa.mTip;
-			noviCl.mL_izraz = noviCl.mConst = vrati.mConst = ime_tipa.mConst;
+			noviCl.mConst = vrati.mConst = ime_tipa.mConst;
+			noviCl.mL_izraz = !noviCl.mConst;
 			vrati.mBrElemenata = -1; // nije polje
 			noviCl.mTipFunkcija = vrati.mTipFunkcija = null;
 			noviCl.mNiz = vrati.mNiz = false;
