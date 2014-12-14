@@ -97,7 +97,7 @@ public class DeklaracijeIDefinicije {
 		UniformniZnak uz_void = UniformniZnak.SigurnoStvaranje(linija);
 		if (uz_void.mNaziv.equals("KR_VOID")){ 
 			if (clTablice != null){
-				if ((clTablice.mTipFunkcija.mPov != ime_tipa.mTip)) bezGreskeZasad = false;
+				if ((clTablice.mTipFunkcija.mPov) != ime_tipa.mTip) bezGreskeZasad = false;
 				if (clTablice.mTipFunkcija.mParam.size() != 0) bezGreskeZasad = false;
 			}
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj D_ZAGRADA
@@ -307,7 +307,12 @@ public class DeklaracijeIDefinicije {
 			ClanTabliceZnakova noviCl = new ClanTabliceZnakova();
 			noviCl.mTip = vrati.mTip = ime_tipa.mTip;
 			noviCl.mL_izraz = noviCl.mConst = vrati.mConst = ime_tipa.mConst;
-			vrati.mBrElemenata = Integer.parseInt(uz_broj.mLeksickaJedinka);
+			try{
+				vrati.mBrElemenata = Integer.parseInt(uz_broj.mLeksickaJedinka);
+			}catch(NumberFormatException e){
+				//TODO Well sometimes it just cannot parse that
+				
+			}
 			vrati.mTipFunkcija = null;
 			noviCl.mNiz = vrati.mNiz = true;
 			noviCl.mDefinirano = true;
