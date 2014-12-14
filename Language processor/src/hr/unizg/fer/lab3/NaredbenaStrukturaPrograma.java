@@ -189,8 +189,8 @@ public class NaredbenaStrukturaPrograma {
 			if (!izraz_naredba2_jeOK){
 				String greska = "<naredba_petlje> ::= " + uz.FormatZaIspis() + " " +
 						uz_l_zagrada.FormatZaIspis() + " <izraz_naredba> <izraz_naredba>";
-				if (imaIzraz) greska += " <izraz> ";
-				greska += uz_d_zagrada.FormatZaIspis() + " <naredba>";
+				if (imaIzraz) greska += " <izraz>";
+				greska += " " + uz_d_zagrada.FormatZaIspis() + " <naredba>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}
 			return;
