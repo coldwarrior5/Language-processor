@@ -89,9 +89,7 @@ public class Utilities {
 	}
 	
 	public static int VratiBrojZnakovaIz_NIZ_ZNAKOVA(String niz_znakova){
-		
-		
-		return 0;
+		return niz_znakova.length() - 2;
 	}
 	
 	public static String ReadStringFromInput(){

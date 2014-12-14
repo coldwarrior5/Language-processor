@@ -102,7 +102,7 @@ public class NaredbenaStrukturaPrograma {
 		linija = mParser.ParsirajNovuLiniju(); // ucitaj D_ZAGRADA
 		UniformniZnak uz_d_zagrada = UniformniZnak.SigurnoStvaranje(linija);
 		linija = mParser.ParsirajNovuLiniju(); // ucitaj <naredba>1
-
+		PROVJERI_naredba();
 		
 		// ima li jos i "else"?
 		Boolean elseExists = false;
@@ -110,7 +110,7 @@ public class NaredbenaStrukturaPrograma {
 		UniformniZnak uz_else = null;
 		if (linija != null){
 			uz_else = UniformniZnak.SigurnoStvaranje(linija);
-			if (uz_else.mNaziv.equals("KR_ELSE")) elseExists = true;
+			if (uz_else != null && uz_else.mNaziv.equals("KR_ELSE")) elseExists = true;
 		}
 		
 		// ispis u slucaju pogreske
@@ -121,7 +121,6 @@ public class NaredbenaStrukturaPrograma {
 			Utilities.WriteStringLineToOutputAndExit(greska);
 		}
 		
-		PROVJERI_naredba();
 		if (elseExists){
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj KR_ELSE (jer smo ga dobavili samo privirkivanjem)
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <naredba>2

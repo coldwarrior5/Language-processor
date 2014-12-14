@@ -178,7 +178,7 @@ public class DeklaracijeIDefinicije {
 		Boolean jeNiz = false;
 		UniformniZnak uz_l_ugl_zagrada = UniformniZnak.SigurnoStvaranje(linija);
 		UniformniZnak uz_d_ugl_zagrada = null;
-		if (uz_l_ugl_zagrada != null && uz_l_ugl_zagrada.mLeksickaJedinka.equals("L_UGL_ZAGRADA")){
+		if (uz_l_ugl_zagrada != null && uz_l_ugl_zagrada.mNaziv.equals("L_UGL_ZAGRADA")){
 			jeNiz = true;
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj L_UGL_ZAGRADA
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj D_UGL_ZAGRADA
@@ -267,10 +267,10 @@ public class DeklaracijeIDefinicije {
 				if (!Utilities.ImplicitnaPretvorbaMoguca(inicijalizator.get(0).mTip, izravni_deklarator.mTip)) pogreska = true;
 			}else if (Utilities.JeBrojevniTip(izravni_deklarator.mTip) && izravni_deklarator.mNiz){ // je niz
 				if (izravni_deklarator.mBrElemenata < inicijalizator.size()) pogreska = true;
-				 // svaki clan u polju iniccijalizacije se mora implicitno moc pretvorit u tip izravnog_deklaratora
+				 // svaki clan u polju inicijalizacije se mora implicitno moc pretvorit u tip izravnog_deklaratora
 				for (int i = 0; i < inicijalizator.size(); ++i)
 					if (!Utilities.ImplicitnaPretvorbaMoguca(inicijalizator.get(i).mTip, izravni_deklarator.mTip) ||
-							inicijalizator.get(i).mNiz != izravni_deklarator.mNiz){
+							inicijalizator.get(i).mNiz){
 						pogreska = true;
 						break;
 					}

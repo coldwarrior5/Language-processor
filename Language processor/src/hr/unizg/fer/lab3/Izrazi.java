@@ -142,6 +142,8 @@ public class Izrazi {
 				}
 				if (linija.equals("<lista_argumenata>")){ // lista_argumenata --> pov
 					List<Tip_LIzraz_Const_Niz> lista_argumenata = PROVJERI_lista_argumenata();
+					linija = mParser.ParsirajNovuLiniju(); // ucitaj D_ZAGRADA
+					uz2 = UniformniZnak.SigurnoStvaranje(linija);
 					
 					Boolean arg_Par_OK = true;
 					if (postfiks_izraz.mFun.mParam.size() == lista_argumenata.size()){
@@ -212,7 +214,7 @@ public class Izrazi {
 			return vrati;
 		}
 		
-		if (uz != null && uz.mNaziv.equals("OP_DEC") || uz.mNaziv.equals("OP_INC")){
+		if (uz != null && (uz.mNaziv.equals("OP_DEC") || uz.mNaziv.equals("OP_INC"))){
 			linija = mParser.ParsirajNovuLiniju();	// ucitaj <unarni_izraz>
 			Tip_LIzraz_Const_Niz unarni_izraz = PROVJERI_unarni_izraz();
 			if (!unarni_izraz.mL_izraz || !Utilities.ImplicitnaPretvorbaMoguca(unarni_izraz.mTip, Tip._int) || unarni_izraz.mNiz){
@@ -264,7 +266,7 @@ public class Izrazi {
 			UniformniZnak uz_dZagrada = UniformniZnak.SigurnoStvaranje(linija);
 			linija = mParser.ParsirajNovuLiniju();	// ucitaj <cast_izraz>
 			Tip_LIzraz_Const_Niz cast_izraz = PROVJERI_cast_izraz();
-			if (!Utilities.JeBrojevniTip(ime_tipa.mTip) || !Utilities.JeBrojevniTip(cast_izraz.mTip)){
+			if (!Utilities.JeBrojevniTip(ime_tipa.mTip) || !Utilities.JeBrojevniTip(cast_izraz.mTip) || (cast_izraz.mNiz)){
 				String greska = "<cast_izraz> ::= " + uz.FormatZaIspis() + " <ime_tipa> " + 
 						uz_dZagrada.FormatZaIspis() + " <cast_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
