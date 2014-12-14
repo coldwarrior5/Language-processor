@@ -35,6 +35,7 @@ public class DeklaracijeIDefinicije {
 			List<Tip_LIzraz_Const_Niz_Ime> lista_parametara = PROVJERI_lista_parametara();
 			
 			if (clTablice != null){
+				if (clTablice.mDefinirano) bezGreskeZasad = false;
 				if ((clTablice.mTipFunkcija.mPov != ime_tipa.mTip)) bezGreskeZasad = false;
 				if (lista_parametara.size() != clTablice.mTipFunkcija.mParam.size()) bezGreskeZasad = false;
 				else {
@@ -261,16 +262,18 @@ public class DeklaracijeIDefinicije {
 			pridruzivanje = true;
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj OP_PRIDRUZI
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <inicijalizator>
-			List<Tip_LIzraz_Const_Niz> inicijalizator = PROVJERI_inicijalizator();
+			LISTA_Tip_LIzraz_Const_Niz inicijalizator = PROVJERI_inicijalizator();
 			
 			if (Utilities.JeBrojevniTip(izravni_deklarator.mTip) && !izravni_deklarator.mNiz){ // nije niz
-				if (!Utilities.ImplicitnaPretvorbaMoguca(inicijalizator.get(0).mTip, izravni_deklarator.mTip)) pogreska = true;
+				if (!Utilities.ImplicitnaPretvorbaMoguca(inicijalizator.mLista.get(0).mTip, izravni_deklarator.mTip)) pogreska = true;
+				if (inicijalizator.mJeNiz) pogreska = true;
 			}else if (Utilities.JeBrojevniTip(izravni_deklarator.mTip) && izravni_deklarator.mNiz){ // je niz
-				if (izravni_deklarator.mBrElemenata < inicijalizator.size()) pogreska = true;
+				if (izravni_deklarator.mBrElemenata < inicijalizator.mLista.size()) pogreska = true;
+				if (!inicijalizator.mJeNiz) pogreska = true;
 				 // svaki clan u polju inicijalizacije se mora implicitno moc pretvorit u tip izravnog_deklaratora
-				for (int i = 0; i < inicijalizator.size(); ++i)
-					if (!Utilities.ImplicitnaPretvorbaMoguca(inicijalizator.get(i).mTip, izravni_deklarator.mTip) ||
-							inicijalizator.get(i).mNiz){
+				for (int i = 0; i < inicijalizator.mLista.size(); ++i)
+					if (!Utilities.ImplicitnaPretvorbaMoguca(inicijalizator.mLista.get(i).mTip, izravni_deklarator.mTip) ||
+							inicijalizator.mLista.get(i).mNiz){
 						pogreska = true;
 						break;
 					}
@@ -310,7 +313,8 @@ public class DeklaracijeIDefinicije {
 			try{
 				vrati.mBrElemenata = Integer.parseInt(uz_broj.mLeksickaJedinka);
 			}catch(NumberFormatException e){
-				//TODO Well sometimes it just cannot parse that
+				// Ponekad nemoze parsirat
+				vrati.mBrElemenata = 1025; // taman dosta da javi gresku ovdje dolje.
 				
 			}
 			vrati.mTipFunkcija = null;
@@ -354,8 +358,7 @@ public class DeklaracijeIDefinicije {
 				noviCl.mDefinirano = mSTZ.JeliFunkcijaDefinirana(uz_idn.mLeksickaJedinka, noviCl.mTipFunkcija);
 				
 				if (clT != null){
-					if (clT.mTipFunkcija.mPov != ime_tipa.mTip || clT.mTipFunkcija.mParam.size() != 0)
-					if (Utilities.FunkcijeIste(clT.mTipFunkcija, noviCl.mTipFunkcija))
+					if (!Utilities.FunkcijeIste(clT.mTipFunkcija, noviCl.mTipFunkcija))
 						vecPostojecaDeklaracijaOdgovara = false;
 				}				
 				if (!vecPostojecaDeklaracijaOdgovara){
@@ -416,12 +419,12 @@ public class DeklaracijeIDefinicije {
 		}
 	}
 	
-	public static List<Tip_LIzraz_Const_Niz> PROVJERI_inicijalizator(){
+	public static LISTA_Tip_LIzraz_Const_Niz PROVJERI_inicijalizator(){
 		String linija = mParser.ParsirajNovuLiniju();
 		
 		if (linija.equals("<izraz_pridruzivanja>")){
 			Tip_LIzraz_Const_Niz izraz_pridruzivanja = Izrazi.PROVJERI_izraz_pridruzivanja();
-			List<Tip_LIzraz_Const_Niz> vrati = new ArrayList<Tip_LIzraz_Const_Niz>();
+			LISTA_Tip_LIzraz_Const_Niz vrati = new LISTA_Tip_LIzraz_Const_Niz();
 			if (Izrazi.mZadnjiPrimarniIzrazJe_NIZ_ZNAKOVA){
 				for (int i = 0; i < Izrazi.mDuljina_NIZ_ZNAKOVA + 1; ++i){
 					Tip_LIzraz_Const_Niz priv = new Tip_LIzraz_Const_Niz();
@@ -430,18 +433,23 @@ public class DeklaracijeIDefinicije {
 					priv.mTip = Tip._char;
 					priv.mNiz = false;
 					priv.mL_izraz = false;
-					vrati.add(priv);
+					vrati.mLista.add(priv);
 				}
+				vrati.mJeNiz = true;
 				return vrati;
 			}else{ // nije niz znakova
-				vrati.add(izraz_pridruzivanja);
+				vrati.mLista.add(izraz_pridruzivanja);
+				vrati.mJeNiz = false;
 				return vrati;
 			}
 		}else{ // L_VIT_ZAGRADA
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <lista_izraza_pridruzivanja>
 			List<Tip_LIzraz_Const_Niz> lista_izraza_pridruzivanja = PROVJERI_lista_izraza_pridruzivanja();
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj D_VIT_ZAGRADA
-			return lista_izraza_pridruzivanja;
+			LISTA_Tip_LIzraz_Const_Niz vrati = new LISTA_Tip_LIzraz_Const_Niz();
+			vrati.mLista = lista_izraza_pridruzivanja;
+			vrati.mJeNiz = true;
+			return vrati;
 		}
 	}
 	

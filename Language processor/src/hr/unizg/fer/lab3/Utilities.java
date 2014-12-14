@@ -1,5 +1,7 @@
 package hr.unizg.fer.lab3;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 class UniformniZnak{
@@ -8,12 +10,10 @@ class UniformniZnak{
 	String mLeksickaJedinka;
 	
 	public UniformniZnak(String linija){
-		linija += " "; // lakse je ovako rascjepati liniju
 		mNaziv = linija.substring(0, linija.indexOf(' '));
 		linija = linija.substring(linija.indexOf(' ') + 1);
 		mRedak = Integer.parseInt(linija.substring(0, linija.indexOf(' ')));
 		linija = linija.substring(linija.indexOf(' ') + 1);
-		linija = linija.substring(0, linija.indexOf(' '));
 		mLeksickaJedinka = linija;
 	}
 	
@@ -39,6 +39,10 @@ class Tip_LIzraz_Const_Niz{
 	Boolean mConst;
 	Boolean mNiz;
 	}
+class LISTA_Tip_LIzraz_Const_Niz{
+	List<Tip_LIzraz_Const_Niz> mLista = new ArrayList<Tip_LIzraz_Const_Niz>();
+	Boolean mJeNiz;
+}
 
 class Tip_Const{
 	Tip mTip;	
@@ -84,7 +88,9 @@ public class Utilities {
 		if (f1.mPov != f2.mPov) return false;
 		if (f1.mParam.size() != f2.mParam.size()) return false;
 		for (int i = 0; i < f1.mParam.size(); ++i)
-			if (f1.mParam.get(i) != f2.mParam.get(i)) return false;
+			if (f1.mParam.get(i).mConst != f2.mParam.get(i).mConst ||
+			f1.mParam.get(i).mNiz != f2.mParam.get(i).mNiz ||
+			f1.mParam.get(i).mTip != f2.mParam.get(i).mTip) return false;
 		return true;
 	}
 	

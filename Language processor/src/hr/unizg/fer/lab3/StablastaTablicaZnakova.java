@@ -72,8 +72,13 @@ public class StablastaTablicaZnakova {
 		Iterator<String> it1;
 		Iterator<ClanTabliceZnakova> it2;
 		for (it1 = mNedefiniraniZnakovi_idn.iterator(), it2 = mNedefiniraniZnakovi_ct.iterator(); it2.hasNext();){
-			if (it1.equals(identifikator)){ it1.remove(); it2.remove(); }
-			else { it1.next(); it2.next(); }
+			String idn = it1.next();
+			it2.next();
+			
+			if (idn.equals(identifikator)){
+				it1.remove();
+				it2.remove();
+			}
 		}
 	}
 	

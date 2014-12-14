@@ -44,7 +44,9 @@ public class NaredbenaStrukturaPrograma {
 		String linija = mParser.ParsirajNovuLiniju();
 		
 		if (linija.equals("<slozena_naredba>")){
+			mSTZ.UdjiUNoviCvor(null);
 			PROVJERI_slozena_naredba();
+			mSTZ.IzadjiIzCvora();
 			return;
 		}
 		
@@ -221,14 +223,14 @@ public class NaredbenaStrukturaPrograma {
 				linija = mParser.ParsirajNovuLiniju(); // TOCKAZAREZ
 				uz_tockaZarez = UniformniZnak.SigurnoStvaranje(linija);
 				TipFunkcija tipFunk = mSTZ.VratiDeklaracijuFunkcijeDjelokruga();
-				if (!Utilities.ImplicitnaPretvorbaMoguca(izraz.mTip, tipFunk.mPov) || izraz.mNiz){
+				if (tipFunk == null || !Utilities.ImplicitnaPretvorbaMoguca(izraz.mTip, tipFunk.mPov) || izraz.mNiz){
 					String greska = "<naredba_skoka> ::= " + uz.FormatZaIspis() + " <izraz> " + uz_tockaZarez.FormatZaIspis();
 					Utilities.WriteStringLineToOutputAndExit(greska);
 				}				
 			}else { // mora biti tockaZarez
 				uz_tockaZarez = UniformniZnak.SigurnoStvaranje(linija);
 				TipFunkcija tipFunk = mSTZ.VratiDeklaracijuFunkcijeDjelokruga();
-				if (tipFunk.mPov != Tip._void){
+				if (tipFunk == null || tipFunk.mPov != Tip._void){
 					String greska = "<naredba_skoka> ::= " + uz.FormatZaIspis() + " " + uz_tockaZarez.FormatZaIspis();
 					Utilities.WriteStringLineToOutputAndExit(greska);
 				}
