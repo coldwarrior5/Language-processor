@@ -322,7 +322,7 @@ public class DeklaracijeIDefinicije {
 			noviCl.mDefinirano = true;
 			noviCl.mTipFunkcija = null;
 			
-			if (ime_tipa.mTip == Tip._void || clT != null || vrati.mBrElemenata < 0 || vrati.mBrElemenata > 1024){
+			if (ime_tipa.mTip == Tip._void || clT != null || vrati.mBrElemenata < 1 || vrati.mBrElemenata > 1024){
 				String greska = "<izravni_deklarator> ::= " + uz_idn.FormatZaIspis() + " " + uz_1.FormatZaIspis() + " " +
 						uz_broj.FormatZaIspis() + " " + uz_d_ugl_zagrada.FormatZaIspis();
 				Utilities.WriteStringLineToOutputAndExit(greska);

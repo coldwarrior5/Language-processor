@@ -148,16 +148,22 @@ public class Utilities {
 	}
 	
 	public static boolean ProvjeriChar(String in){
-		//if (in.charAt(0) != '\'' || in.charAt(in.length() - 1) != '\'') return false;
-		if (in.length() > 4) return false;
+		if (in.length() > 4) 
+			return false;
 		if (in.length() == 4){
-			if (in.charAt(1) != '\\') return false;
+			if (in.charAt(1) != '\\') 
+				return false;
 			if (in.charAt(2) != 't' &&
 					in.charAt(2) != 'n' &&
 					in.charAt(2) != '0' &&
 					in.charAt(2) != '\'' &&
 					in.charAt(2) != '"' &&
-					in.charAt(2) != '\\') return false;
+					in.charAt(2) != '\\')
+				return false;
+		}
+		else{ // length mora biti 3
+			if (in.charAt(1) == '\\') 
+				return false;
 		}
 		
 		return true;

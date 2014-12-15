@@ -146,10 +146,11 @@ public class Izrazi {
 					uz2 = UniformniZnak.SigurnoStvaranje(linija);
 					
 					Boolean arg_Par_OK = true;
-					if (postfiks_izraz.mFun.mParam.size() == lista_argumenata.size()){
+					if (postfiks_izraz.mTip == Tip._funkcija && postfiks_izraz.mFun.mParam.size() == lista_argumenata.size()){
 						for (int i = 0; i < lista_argumenata.size(); ++i) 
 							if (!Utilities.ImplicitnaPretvorbaMoguca(lista_argumenata.get(i).mTip, postfiks_izraz.mFun.mParam.get(i).mTip) ||
-									(lista_argumenata.get(i).mNiz != postfiks_izraz.mFun.mParam.get(i).mNiz))
+									(lista_argumenata.get(i).mNiz != postfiks_izraz.mFun.mParam.get(i).mNiz) ||
+									(lista_argumenata.get(i).mConst && !postfiks_izraz.mFun.mParam.get(i).mConst)) // nemoguca pretvorba sa `niz(const char)` u `niz(char)`
 								arg_Par_OK = false;
 					}else arg_Par_OK = false;
 					
