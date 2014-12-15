@@ -150,7 +150,7 @@ public class Izrazi {
 						for (int i = 0; i < lista_argumenata.size(); ++i) 
 							if (!Utilities.ImplicitnaPretvorbaMoguca(lista_argumenata.get(i).mTip, postfiks_izraz.mFun.mParam.get(i).mTip) ||
 									(lista_argumenata.get(i).mNiz != postfiks_izraz.mFun.mParam.get(i).mNiz) ||
-									(lista_argumenata.get(i).mConst && !postfiks_izraz.mFun.mParam.get(i).mConst)) // nemoguca pretvorba sa `niz(const char)` u `niz(char)`
+									(lista_argumenata.get(i).mConst && !postfiks_izraz.mFun.mParam.get(i).mConst && lista_argumenata.get(i).mNiz)) // nemoguca pretvorba sa `niz(const char)` u `niz(char)`
 								arg_Par_OK = false;
 					}else arg_Par_OK = false;
 					
