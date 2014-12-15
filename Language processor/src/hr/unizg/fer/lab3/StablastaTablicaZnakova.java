@@ -68,14 +68,14 @@ public class StablastaTablicaZnakova {
 		}
 	}
 	
-	public void Definiran(String identifikator){
+	public void UpravoDefiniranaFunkcija(String identifikator, ClanTabliceZnakova clTablice){
 		Iterator<String> it1;
 		Iterator<ClanTabliceZnakova> it2;
 		for (it1 = mNedefiniraniZnakovi_idn.iterator(), it2 = mNedefiniraniZnakovi_ct.iterator(); it2.hasNext();){
-			String idn = it1.next();
-			it2.next();
+			String itIdn = it1.next();
+			ClanTabliceZnakova itClT = it2.next();
 			
-			if (idn.equals(identifikator)){
+			if (itIdn.equals(identifikator) && Utilities.FunkcijeIste(clTablice.mTipFunkcija, itClT.mTipFunkcija)){
 				it1.remove();
 				it2.remove();
 			}

@@ -74,7 +74,7 @@ public class DeklaracijeIDefinicije {
 				clTab.mTipFunkcija.mParam.add(tcn);
 			}
 			mSTZ.DodajClanUTablicuZnakova(uz_idn.mLeksickaJedinka, clTab);
-			mSTZ.Definiran(uz_idn.mLeksickaJedinka);
+			mSTZ.UpravoDefiniranaFunkcija(uz_idn.mLeksickaJedinka, clTab);
 			
 			// ulazak u funkciju i deklaracija parametara u novom cvoru STZ
 			mSTZ.UdjiUNoviCvor(clTab);
@@ -97,7 +97,7 @@ public class DeklaracijeIDefinicije {
 		// <<<<<<<<<<<<   funkcija koja ne prima parametre   >>>>>>>>>>>>
 		UniformniZnak uz_void = UniformniZnak.SigurnoStvaranje(linija);
 		if (uz_void.mNaziv.equals("KR_VOID")){ 
-			if (clTablice != null){
+			if (clTablice != null && clTablice.mTip == Tip._funkcija){
 				if ((clTablice.mTipFunkcija.mPov) != ime_tipa.mTip) bezGreskeZasad = false;
 				if (clTablice.mTipFunkcija.mParam.size() != 0) bezGreskeZasad = false;
 			}
@@ -120,7 +120,7 @@ public class DeklaracijeIDefinicije {
 			clTab.mTipFunkcija.mPov = ime_tipa.mTip;
 			// clTab.mTipFunkcija.mParam ostavim na 0
 			mSTZ.DodajClanUTablicuZnakova(uz_idn.mLeksickaJedinka, clTab);
-			mSTZ.Definiran(uz_idn.mLeksickaJedinka);
+			mSTZ.UpravoDefiniranaFunkcija(uz_idn.mLeksickaJedinka, clTab);
 			
 			// ulazak u funkciju
 			mSTZ.UdjiUNoviCvor(clTab);

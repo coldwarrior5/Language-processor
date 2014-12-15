@@ -94,10 +94,6 @@ public class Utilities {
 		return true;
 	}
 	
-	public static int VratiBrojZnakovaIz_NIZ_ZNAKOVA(String niz_znakova){
-		return niz_znakova.length() - 2;
-	}
-	
 	public static String ReadStringFromInput(){
 		String input = "";
 		Scanner scIn = new Scanner(System.in);
@@ -133,8 +129,18 @@ public class Utilities {
 	}
 
 	public static boolean ProvjeriInt(String in){
+		
+		int base = 10;
+		if (in.charAt(0) == '0'){
+			base = 8; // oct, upitno dali se koristi
+			if (in.length() >= 3 && (in.charAt(1) == 'x' || in.charAt(1) == 'X')){
+				base = 16; // hex
+				in = in.substring(2, in.length());
+			}
+		}
+		
 		try{
-			Integer.parseInt(in);
+			Integer.parseInt(in, base);
 		}catch(NumberFormatException e){
 			return false;
 		}
@@ -155,6 +161,15 @@ public class Utilities {
 		}
 		
 		return true;
+	}
+		
+	public static int VratiBrojZnakovaIz_NIZ_ZNAKOVA(String niz_znakova){
+		int broj = 0;
+		for (int i = 0; i < niz_znakova.length(); ++i){
+			if (niz_znakova.charAt(i) == '\\') ++i;
+			++broj;
+		}
+		return broj - 2; // zbog navodnika - 2
 	}
 	
 	public static boolean ProvjeriNizConstChar(String in){
