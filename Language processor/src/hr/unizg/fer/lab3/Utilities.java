@@ -173,28 +173,27 @@ public class Utilities {
 	}
 	
 	public static boolean ProvjeriNizConstChar(String in){
-		
-		int index = 0;
-		int length = in.length();
-		while(true){
-			index = in.indexOf('\\', index);
-			if (index == (length - 1)) 
-				return false; // nesmije '/' biti zadnji znak
-			else if (index != -1){
-				if ((index != (length - 1) && 
-					(in.charAt(index + 1) != 't') &&
-					(in.charAt(index + 1) != 'n') &&
-					(in.charAt(index + 1) != '0') &&
-					(in.charAt(index + 1) != '\'') &&
-					(in.charAt(index + 1) != '"') &&
-					(in.charAt(index + 1) != '\\'))) return false;
-				else
-					index += 2; // vazno u slucaju '//'
-			} 
-			else 
-				break;
+		Boolean prefiksiran = false;
+		for (int i = 1; i < in.length() - 1; ++i){ // idemo od 1 do length() - 1 jer navodnici su osigurani leksikom
+			char c = in.charAt(i);
+			if (prefiksiran){
+				if (c != 't' && c != 'n' && c != '0' && c != '\'' && c != '"' && c != '\\')
+					return false;
+				else{
+					prefiksiran = false;
+					continue;
+				}
+			}
+			else{
+				if (c == '"') 
+					return false;
+			}
+			if (c == '\\'){
+				prefiksiran = !prefiksiran;
+			}
 		}
-		
-		return true;
+		// nesmije zavrsit prefiksiran
+		if (prefiksiran) return false;
+		else return true;
 	}
 }

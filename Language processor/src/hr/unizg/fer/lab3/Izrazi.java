@@ -345,13 +345,15 @@ public class Izrazi {
 			Tip_LIzraz_Const_Niz multiplikativni_izraz = PROVJERI_multiplikativni_izraz();
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj (OP_PUTA | OP_DIJELI | OP_MOD)
 			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(multiplikativni_izraz.mTip, Tip._int)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(multiplikativni_izraz.mTip, Tip._int) ||
+					multiplikativni_izraz.mNiz){
 				String greska = "<multiplikativni_izraz> ::= <multiplikativni_izraz> " + uz_operator.FormatZaIspis() + " <cast_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <cast_izraz>
 			Tip_LIzraz_Const_Niz cast_izraz = PROVJERI_cast_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(cast_izraz.mTip, Tip._int)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(cast_izraz.mTip, Tip._int) ||
+					cast_izraz.mNiz){
 				String greska = "<multiplikativni_izraz> ::= <multiplikativni_izraz> " + uz_operator.FormatZaIspis() + " <cast_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}
@@ -379,13 +381,15 @@ public class Izrazi {
 			Tip_LIzraz_Const_Niz aditivni_izraz = PROVJERI_aditivni_izraz();
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj (PLUS | MINUS)
 			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(aditivni_izraz.mTip, Tip._int)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(aditivni_izraz.mTip, Tip._int) ||
+					aditivni_izraz.mNiz){
 				String greska = "<aditivni_izraz> ::= <aditivni_izraz> " + uz_operator.FormatZaIspis() + " <multiplikativni_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <multiplikativni_izraz>
 			Tip_LIzraz_Const_Niz multiplikativni_izraz = PROVJERI_multiplikativni_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(multiplikativni_izraz.mTip, Tip._int)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(multiplikativni_izraz.mTip, Tip._int) ||
+					multiplikativni_izraz.mNiz){
 				String greska = "<aditivni_izraz> ::= <aditivni_izraz> " + uz_operator.FormatZaIspis() + " <multiplikativni_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}
@@ -413,13 +417,15 @@ public class Izrazi {
 			Tip_LIzraz_Const_Niz odnosni_izraz = PROVJERI_odnosni_izraz();
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj (OP_LT | OP_GT | OP_LTE | OP_GTE)
 			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(odnosni_izraz.mTip, Tip._int)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(odnosni_izraz.mTip, Tip._int) ||
+					odnosni_izraz.mNiz){
 				String greska = "<odnosni_izraz> ::= <odnosni_izraz> " + uz_operator.FormatZaIspis() + " <aditivni_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <aditivni_izraz>
 			Tip_LIzraz_Const_Niz aditivni_izraz = PROVJERI_aditivni_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(aditivni_izraz.mTip, Tip._int)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(aditivni_izraz.mTip, Tip._int) ||
+					aditivni_izraz.mNiz){
 				String greska = "<odnosni_izraz> ::= <odnosni_izraz> " + uz_operator.FormatZaIspis() + " <aditivni_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}
@@ -433,7 +439,7 @@ public class Izrazi {
 		
 		return null;
 	}
-
+	
 	public static Tip_LIzraz_Const_Niz PROVJERI_jednakosni_izraz(){
 		String linija = mParser.ParsirajNovuLiniju();
 		Tip_LIzraz_Const_Niz vrati;		
@@ -447,13 +453,15 @@ public class Izrazi {
 			Tip_LIzraz_Const_Niz jednakosni_izraz = PROVJERI_jednakosni_izraz();
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj (OP_EQ | OP_NEQ)
 			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(jednakosni_izraz.mTip, Tip._int)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(jednakosni_izraz.mTip, Tip._int) ||
+					jednakosni_izraz.mNiz){
 				String greska = "<jednakosni_izraz> ::= <jednakosni_izraz> " + uz_operator.FormatZaIspis() + " <odnosni_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <odnosni_izraz>
 			Tip_LIzraz_Const_Niz odnosni_izraz = PROVJERI_odnosni_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(odnosni_izraz.mTip, Tip._int)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(odnosni_izraz.mTip, Tip._int) ||
+					odnosni_izraz.mNiz){
 				String greska = "<jednakosni_izraz> ::= <jednakosni_izraz> " + uz_operator.FormatZaIspis() + " <odnosni_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}
@@ -481,13 +489,15 @@ public class Izrazi {
 			Tip_LIzraz_Const_Niz bin_i_izraz = PROVJERI_bin_i_izraz();
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj OP_BIN_I
 			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(bin_i_izraz.mTip, Tip._int)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(bin_i_izraz.mTip, Tip._int) ||
+					bin_i_izraz.mNiz){
 				String greska = "<bin_i_izraz> ::= <bin_i_izraz> " + uz_operator.FormatZaIspis() + " <jednakosni_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <jednakosni_izraz>
 			Tip_LIzraz_Const_Niz jednakosni_izraz = PROVJERI_jednakosni_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(jednakosni_izraz.mTip, Tip._int)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(jednakosni_izraz.mTip, Tip._int) ||
+					jednakosni_izraz.mNiz){
 				String greska = "<bin_i_izraz> ::= <bin_i_izraz> " + uz_operator.FormatZaIspis() + " <jednakosni_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}
@@ -515,13 +525,15 @@ public class Izrazi {
 			Tip_LIzraz_Const_Niz bin_xili_izraz = PROVJERI_bin_xili_izraz();
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj OP_BIN_XILI
 			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(bin_xili_izraz.mTip, Tip._int)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(bin_xili_izraz.mTip, Tip._int) ||
+					bin_xili_izraz.mNiz){
 				String greska = "<bin_xili_izraz> ::= <bin_xili_izraz> " + uz_operator.FormatZaIspis() + " <bin_i_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <bin_i_izraz>
 			Tip_LIzraz_Const_Niz bin_i_izraz = PROVJERI_bin_i_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(bin_i_izraz.mTip, Tip._int)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(bin_i_izraz.mTip, Tip._int) ||
+					bin_i_izraz.mNiz){
 				String greska = "<bin_xili_izraz> ::= <bin_xili_izraz> " + uz_operator.FormatZaIspis() + " <bin_i_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}
@@ -549,13 +561,15 @@ public class Izrazi {
 			Tip_LIzraz_Const_Niz bin_ili_izraz = PROVJERI_bin_ili_izraz();
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj OP_BIN_ILI
 			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(bin_ili_izraz.mTip, Tip._int)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(bin_ili_izraz.mTip, Tip._int) ||
+					bin_ili_izraz.mNiz){
 				String greska = "<bin_ili_izraz> ::= <bin_ili_izraz> " + uz_operator.FormatZaIspis() + " <bin_xili_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <bin_xili_izraz>
 			Tip_LIzraz_Const_Niz bin_xili_izraz = PROVJERI_bin_xili_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(bin_xili_izraz.mTip, Tip._int)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(bin_xili_izraz.mTip, Tip._int) ||
+					bin_xili_izraz.mNiz){
 				String greska = "<bin_ili_izraz> ::= <bin_ili_izraz> " + uz_operator.FormatZaIspis() + " <bin_xili_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}
@@ -583,13 +597,15 @@ public class Izrazi {
 			Tip_LIzraz_Const_Niz log_i_izraz = PROVJERI_log_i_izraz();
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj OP_I
 			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(log_i_izraz.mTip, Tip._int)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(log_i_izraz.mTip, Tip._int) ||
+					log_i_izraz.mNiz){
 				String greska = "<log_i_izraz> ::= <log_i_izraz> " + uz_operator.FormatZaIspis() + " <bin_ili_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <bin_ili_izraz>
 			Tip_LIzraz_Const_Niz bin_ili_izraz = PROVJERI_bin_ili_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(bin_ili_izraz.mTip, Tip._int)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(bin_ili_izraz.mTip, Tip._int) ||
+					bin_ili_izraz.mNiz){
 				String greska = "<log_i_izraz> ::= <log_i_izraz> " + uz_operator.FormatZaIspis() + " <bin_ili_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}
@@ -617,13 +633,15 @@ public class Izrazi {
 			Tip_LIzraz_Const_Niz log_ili_izraz = PROVJERI_log_ili_izraz();
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj OP_ILI
 			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(log_ili_izraz.mTip, Tip._int)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(log_ili_izraz.mTip, Tip._int) ||
+					log_ili_izraz.mNiz){
 				String greska = "<log_ili_izraz> ::= <log_ili_izraz> " + uz_operator.FormatZaIspis() + " <log_i_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <log_i_izraz>
 			Tip_LIzraz_Const_Niz log_i_izraz = PROVJERI_log_i_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(log_i_izraz.mTip, Tip._int)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(log_i_izraz.mTip, Tip._int) ||
+					log_i_izraz.mNiz){
 				String greska = "<log_ili_izraz> ::= <log_ili_izraz> " + uz_operator.FormatZaIspis() + " <log_i_izraz>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}
@@ -657,7 +675,8 @@ public class Izrazi {
 			}			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <izraz_pridruzivanja>
 			Tip_LIzraz_Const_Niz izraz_pridruzivanja = PROVJERI_izraz_pridruzivanja();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(izraz_pridruzivanja.mTip, postfiks_izraz.mTip)){
+			if (!Utilities.ImplicitnaPretvorbaMoguca(izraz_pridruzivanja.mTip, postfiks_izraz.mTip) ||
+					(izraz_pridruzivanja.mNiz != postfiks_izraz.mNiz)){
 				String greska = "<izraz_pridruzivanja> ::= <postfiks_izraz> " + uz_operator.FormatZaIspis() + " <izraz_pridruzivanja>";
 				Utilities.WriteStringLineToOutputAndExit(greska);
 			}
