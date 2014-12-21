@@ -1,4 +1,4 @@
-package hr.unizg.fer.lab1;
+package hr.unizg.fer.lab4;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -20,22 +20,19 @@ public class SourceCodeBuilder {
 	public SourceCodeBuilder(){
 		mLA_String = new StringBuilder();
 		mLA_String.append(
-				"package hr.unizg.fer.lab1;"
+				"\tMOVE 40000, R7\n"
+				+ "\tCALL F_MAIN\n"
+				+ "\tHALT\n"
 				+ "\n"
+				+ "F_MAIN "
 				+ "\n"
-				+ "\npublic class LA{"
-				+ "\n"
-				+ "\n"
-				+ "\n\tpublic static void main(String[] args){"
-				+ "\n"
-				+ "\n\t}"
-				+ "\n}");
+				+ "\tRET");
 		
-		mImportInsertPoint = 27;
-		mClassInsertPoint = 28;
-		mVarInsertPoint = 46;
-		mFuncInsertPoint = 46;
-		mMainInsertPoint = 88;
+		mImportInsertPoint = 22;
+		mClassInsertPoint = 23;
+		mVarInsertPoint = 41;
+		mFuncInsertPoint = 41;
+		mMainInsertPoint = 43;
 	}
 	
 	/**
@@ -110,7 +107,7 @@ public class SourceCodeBuilder {
 		
 		String inStr = "";
 		String[] lines = stringToAdd.split("\n");
-		for (int i = 0; i < lines.length; ++i) inStr += "\n\t\t" + lines[i];
+		for (int i = 0; i < lines.length; ++i) inStr += lines[i] + "\n";
 		mLA_String.insert(mMainInsertPoint, inStr);
 		mMainInsertPoint += inStr.length();
 	}
@@ -132,7 +129,7 @@ public class SourceCodeBuilder {
 	 */
 	public void Write(String dir){
 		try {
-			PrintWriter writer = new PrintWriter(dir + "LA" + ".java", "UTF-8");
+			PrintWriter writer = new PrintWriter(dir + "a" + ".frisc", "UTF-8");
 			writer.print(mLA_String.toString());
 			writer.close();
 		}
