@@ -2,6 +2,4 @@
 	CALL F_MAIN
 	HALT
 
-F_MAIN MOVE %D 42, R6
 
-	RET
