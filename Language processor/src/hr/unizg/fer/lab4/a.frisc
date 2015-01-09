@@ -1,5 +1,23 @@
+	`BASE D	;postavi bazu 10
 	MOVE 40000, R7
+	MOVE %D 0, R0	;izravni deklarator cijelobrojne varijable: postavi na nulu
+	PUSH R0
+	POP R0	;deklaracija x: biti ce pridruzivanje pa micem null inicjalizaciju
+	MOVE %D 3, R0
+	PUSH R0
+	POP R0	;deklaracija x: dohvacanje vrijednosti
+	STORE R0, (G_X)	;deklaracija x: spremanje na odrediste
+	MOVE F_MAIN, R0	;definicija funkcije main
+	STORE R0, (G_MAIN)
 	CALL F_MAIN
 	HALT
 
+F_MAIN	LOAD R0, (G_X)	;dohvacam x
+	PUSH R0
+	POP R6	;povratna vrijednost sa stoga
+	RET
+	RET	;dodaj RET u slucaju da nije bio eksplicitno pozvan
+
+G_X	DW %D 0
+G_MAIN	DW %D 0
 

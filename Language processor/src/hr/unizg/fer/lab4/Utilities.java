@@ -1,8 +1,8 @@
 package hr.unizg.fer.lab4;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
+
+enum Tip {_int, _char, _funkcija, _void};
 
 class UniformniZnak{
 	String mNaziv;
@@ -17,10 +17,6 @@ class UniformniZnak{
 		mLeksickaJedinka = linija;
 	}
 	
-	public String FormatZaIspis(){
-		return mNaziv + "(" + mRedak + "," + mLeksickaJedinka + ")";
-	}
-	
 	// Vraca null ako input parametar linija ne zadovoljava oblik uniformnog znaka.
 	public static UniformniZnak SigurnoStvaranje(String linija){
 		try{
@@ -32,67 +28,13 @@ class UniformniZnak{
 	}
 }
 
-class Tip_LIzraz_Const_Niz{
-	Tip mTip;	
-	TipFunkcija mFun = null; // razlicito od null ako je (mTip == Tip._funkcija).
-	Boolean mL_izraz;
-	Boolean mConst;
-	Boolean mNiz;
-	}
-class LISTA_Tip_LIzraz_Const_Niz{
-	List<Tip_LIzraz_Const_Niz> mLista = new ArrayList<Tip_LIzraz_Const_Niz>();
-	Boolean mJeNiz;
-}
-
-class Tip_Const{
-	Tip mTip;	
-	Boolean mConst;
-	}
-
-class Tip_Const_Niz{
-	Tip mTip;	
-	Boolean mConst;
-	Boolean mNiz;
-	}
-
-class Tip_Const_Niz_BrEle_TipFunk{
-	Tip mTip;	
-	Boolean mConst;
-	Boolean mNiz;
-	int mBrElemenata; // potrebno ako je niz
-	TipFunkcija mTipFunkcija; // null ako nije mTip == Tip._funkcija
-	}
-
-class Tip_LIzraz_Const_Niz_Ime{
-	Tip_LIzraz_Const_Niz mT;
-	String mIme;
+class Ime_Velicina_Adresa{
+	String mIme; // identifikator
+	int mVelicina; // u byteovima
+	boolean mAdresa; // jeli spremljena vrijednost ili adresa
 	}
 
 public class Utilities {
-	
-	public static Boolean mWriteToOutputEnabled = true;
-	
-	// l --> d
-	public static Boolean ImplicitnaPretvorbaMoguca(Tip l, Tip d){
-		if (l == Tip._char && (d == Tip._int || d == Tip._char)) return true;
-		if (l == Tip._int && d == Tip._int) return true;
-		return false;
-	}
-	
-	public static Boolean JeBrojevniTip(Tip a){
-		if (a == Tip._char || a == Tip._int) return true;
-		else return false;
-	}
-	
-	public static Boolean FunkcijeIste(TipFunkcija f1, TipFunkcija f2){
-		if (f1.mPov != f2.mPov) return false;
-		if (f1.mParam.size() != f2.mParam.size()) return false;
-		for (int i = 0; i < f1.mParam.size(); ++i)
-			if (f1.mParam.get(i).mConst != f2.mParam.get(i).mConst ||
-			f1.mParam.get(i).mNiz != f2.mParam.get(i).mNiz ||
-			f1.mParam.get(i).mTip != f2.mParam.get(i).mTip) return false;
-		return true;
-	}
 	
 	public static String ReadStringFromInput(){
 		String input = "";
@@ -118,18 +60,7 @@ public class Utilities {
 		return input;
 	}
 	
-	public static void WriteStringLineToOutputAndExit(String str){
-		if (!mWriteToOutputEnabled) return;
-		System.out.println(str);
-		System.exit(0);
-	}
-	
-	public static void WriteStringLineToStdErr(String str){
-		System.err.println(str);
-	}
-
-	public static boolean ProvjeriInt(String in){
-		
+	public static int VratiBazu(String in){
 		int base = 10;
 		if (in.charAt(0) == '0'){
 			base = 8; // oct, upitno dali se koristi
@@ -139,67 +70,23 @@ public class Utilities {
 			}
 		}
 		
-		try{
-			Integer.parseInt(in, base);
-		}catch(NumberFormatException e){
-			return false;
-		}
-		return true;
+		return base;
 	}
 	
-	public static boolean ProvjeriChar(String in){
-		if (in.length() > 4) 
-			return false;
+	public static int PretvoriCharUInt(String in){
 		if (in.length() == 4){
-			if (in.charAt(1) != '\\') 
-				return false;
-			if (in.charAt(2) != 't' &&
-					in.charAt(2) != 'n' &&
-					in.charAt(2) != '0' &&
-					in.charAt(2) != '\'' &&
-					in.charAt(2) != '"' &&
-					in.charAt(2) != '\\')
-				return false;
+			// mora biti jedan od ovih
+			if (in.charAt(2) != 't') return (int)('\t');
+			if (in.charAt(2) != 'n') return (int)('\n');
+			if (in.charAt(2) != '0') return (int)('\0');
+			if (in.charAt(2) != '\'') return (int)('\'');
+			if (in.charAt(2) != '"') return (int)('\"');
+			if (in.charAt(2) != '\\') return (int)('\\');
+			// ako nije 
+			return -1;
 		}
 		else{ // length mora biti 3
-			if (in.charAt(1) == '\\') 
-				return false;
+			return in.charAt(1);
 		}
-		
-		return true;
-	}
-		
-	public static int VratiBrojZnakovaIz_NIZ_ZNAKOVA(String niz_znakova){
-		int broj = 0;
-		for (int i = 0; i < niz_znakova.length(); ++i){
-			if (niz_znakova.charAt(i) == '\\') ++i;
-			++broj;
-		}
-		return broj - 2; // zbog navodnika - 2
-	}
-	
-	public static boolean ProvjeriNizConstChar(String in){
-		Boolean prefiksiran = false;
-		for (int i = 1; i < in.length() - 1; ++i){ // idemo od 1 do length() - 1 jer navodnici su osigurani leksikom
-			char c = in.charAt(i);
-			if (prefiksiran){
-				if (c != 't' && c != 'n' && c != '0' && c != '\'' && c != '"' && c != '\\')
-					return false;
-				else{
-					prefiksiran = false;
-					continue;
-				}
-			}
-			else{
-				if (c == '"') 
-					return false;
-			}
-			if (c == '\\'){
-				prefiksiran = !prefiksiran;
-			}
-		}
-		// nesmije zavrsit prefiksiran
-		if (prefiksiran) return false;
-		else return true;
 	}
 }

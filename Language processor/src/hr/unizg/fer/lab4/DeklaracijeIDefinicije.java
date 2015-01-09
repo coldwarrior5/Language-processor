@@ -5,65 +5,50 @@ import java.util.List;
 
 public class DeklaracijeIDefinicije {
 	
-	public static StablastaTablicaZnakova mSTZ;
 	public static Parser mParser;
 	public static FRISC_ispisivac mIspisivac;
+	public static List<Ime_Velicina_Adresa> mGlobalneVariable = new ArrayList<Ime_Velicina_Adresa>();
+	public static String mLabelaTrenutacneFunkcije = null;
+	public static int mBrojParametaraTrenutacneFunkcije = 0;
 	
 	public static void OBRADI_definicija_funkcije(){
 		String linija = mParser.ParsirajNovuLiniju(); // ucitaj <ime_tipa>
-		Tip_Const ime_tipa = Izrazi.OBRADI_ime_tipa();
-		
+		Izrazi.OBRADI_ime_tipa();
 		linija = mParser.ParsirajNovuLiniju(); // ucitaj IDN
 		UniformniZnak uz_idn = UniformniZnak.SigurnoStvaranje(linija);
-		ClanTabliceZnakova clTablice = mSTZ.DohvatiClanIzTabliceZnakova(uz_idn.mLeksickaJedinka);
-		
-		mIspisivac.DodajKod("F_", "MOVE %D 42, R6", "nesto");
-		
 		linija = mParser.ParsirajNovuLiniju(); // ucitaj L_ZAGRADA
-		UniformniZnak uz_l_zagrada = UniformniZnak.SigurnoStvaranje(linija);
 		linija = mParser.ParsirajNovuLiniju();
+		mLabelaTrenutacneFunkcije = "F_" + uz_idn.mLeksickaJedinka.toUpperCase();
+		mIspisivac.DodajKod(null); // radi urednosti
+		mIspisivac.PostaviSljedecuLabelu(mLabelaTrenutacneFunkcije);
+		if (NaredbenaStrukturaPrograma.PretraziIme_Glo(uz_idn.mLeksickaJedinka) == -1){ // ako nije vec deklarirana
+			mIspisivac.DodajGlobalnuVarijablu("G_" + uz_idn.mLeksickaJedinka.toUpperCase(), "DW %D 0");
+			Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+			novi.mIme = uz_idn.mLeksickaJedinka;
+			novi.mAdresa = true;
+			novi.mVelicina = 4;
+			NaredbenaStrukturaPrograma.mGlobalniDjelokrug.add(novi);
+		}
+		mIspisivac.DodajPreMainKod("MOVE " + mLabelaTrenutacneFunkcije + ", R0", "definicija funkcije " + uz_idn.mLeksickaJedinka);
+		mIspisivac.DodajPreMainKod("STORE R0, (G_" + uz_idn.mLeksickaJedinka.toUpperCase() + ")");
 		
-		// <<<<<<<<<<<<   funkcija koja nije f(void), vec prima parametre   >>>>>>>>>>>>
+		// <<<<<<<<<<<<   funkcija koja prima parametre   >>>>>>>>>>>>
 		if (linija.equals("<lista_parametara>")){ 
-			List<Tip_LIzraz_Const_Niz_Ime> lista_parametara = OBRADI_lista_parametara();
-			
+			List<Ime_Velicina_Adresa> lista_parametara = OBRADI_lista_parametara();			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj D_ZAGRADA
-			UniformniZnak uz_d_zagrada = UniformniZnak.SigurnoStvaranje(linija);
-			
-			// definiraj funkciju
-			ClanTabliceZnakova clTab = new ClanTabliceZnakova();
-			clTab.mTip = Tip._funkcija;
-			clTab.mConst = false;
-			clTab.mL_izraz = false;
-			clTab.mNiz = false;
-			clTab.mDefinirano = true;
-			clTab.mTipFunkcija = new TipFunkcija();
-			clTab.mTipFunkcija.mPov = ime_tipa.mTip;
-			for (int i = 0; i < lista_parametara.size(); ++i){
-				Tip_Const_Niz tcn = new Tip_Const_Niz();
-				tcn.mTip = lista_parametara.get(i).mT.mTip;
-				tcn.mConst = lista_parametara.get(i).mT.mConst;
-				tcn.mNiz = lista_parametara.get(i).mT.mNiz;
-				clTab.mTipFunkcija.mParam.add(tcn);
-			}
-			mSTZ.DodajClanUTablicuZnakova(uz_idn.mLeksickaJedinka, clTab);
-			mSTZ.UpravoDefiniranaFunkcija(uz_idn.mLeksickaJedinka, clTab);
-			
-			// ulazak u funkciju i deklaracija parametara u novom cvoru STZ
-			mSTZ.UdjiUNoviCvor(clTab);
-			for (int i = 0; i < lista_parametara.size(); ++i){
-				ClanTabliceZnakova clTabPara = new ClanTabliceZnakova();
-				clTabPara.mTip = lista_parametara.get(i).mT.mTip;
-				clTabPara.mConst = lista_parametara.get(i).mT.mConst;
-				clTabPara.mL_izraz = lista_parametara.get(i).mT.mL_izraz;
-				clTabPara.mNiz = lista_parametara.get(i).mT.mNiz;
-				clTabPara.mDefinirano = true;
-				clTabPara.mTipFunkcija = null;
-				mSTZ.DodajClanUTablicuZnakova(lista_parametara.get(i).mIme, clTabPara);
-			}
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <slozena_naredba>
+			NaredbenaStrukturaPrograma.mStog = lista_parametara;
+			Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa(); // dodaj return vrijednost na vrh stoga
+			mBrojParametaraTrenutacneFunkcije = lista_parametara.size() + 1;
+			novi.mIme = null;
+			novi.mAdresa = false;
+			novi.mVelicina = 4;
+			NaredbenaStrukturaPrograma.mStog.add(novi);
 			NaredbenaStrukturaPrograma.OBRADI_slozena_naredba();
-			mSTZ.IzadjiIzCvora();
+			
+			mLabelaTrenutacneFunkcije = null;
+			NaredbenaStrukturaPrograma.mStog = null;
+			mIspisivac.DodajKod("RET", "dodaj RET u slucaju da nije bio eksplicitno pozvan");
 			return;
 		}
 		
@@ -71,60 +56,43 @@ public class DeklaracijeIDefinicije {
 		UniformniZnak uz_void = UniformniZnak.SigurnoStvaranje(linija);
 		if (uz_void.mNaziv.equals("KR_VOID")){ 
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj D_ZAGRADA
-			UniformniZnak uz_d_zagrada = UniformniZnak.SigurnoStvaranje(linija);
-			// definiraj funkciju
-			ClanTabliceZnakova clTab = new ClanTabliceZnakova();
-			clTab.mTip = Tip._funkcija;
-			clTab.mConst = false;
-			clTab.mL_izraz = false;
-			clTab.mNiz = false;
-			clTab.mDefinirano = true;
-			clTab.mTipFunkcija = new TipFunkcija();
-			clTab.mTipFunkcija.mPov = ime_tipa.mTip;
-			// clTab.mTipFunkcija.mParam ostavim na 0
-			mSTZ.DodajClanUTablicuZnakova(uz_idn.mLeksickaJedinka, clTab);
-			mSTZ.UpravoDefiniranaFunkcija(uz_idn.mLeksickaJedinka, clTab);
 			
 			// ulazak u funkciju
-			mSTZ.UdjiUNoviCvor(clTab);
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <slozena_naredba>
+			List<Ime_Velicina_Adresa> lista_parametara = new ArrayList<Ime_Velicina_Adresa>();
+			NaredbenaStrukturaPrograma.mStog = lista_parametara;
+			Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa(); // dodaj return vrijednost na vrh stoga
+			mBrojParametaraTrenutacneFunkcije = lista_parametara.size() + 1;
+			novi.mIme = null;
+			novi.mAdresa = false;
+			novi.mVelicina = 4;
+			NaredbenaStrukturaPrograma.mStog.add(novi);
 			NaredbenaStrukturaPrograma.OBRADI_slozena_naredba();
-			mSTZ.IzadjiIzCvora();
+			
+			mLabelaTrenutacneFunkcije = null;
+			NaredbenaStrukturaPrograma.mStog = null;
+			mIspisivac.DodajKod("RET", "dodaj RET u slucaju da nije bio eksplicitno pozvan");
 			return;
 		}
-		
-		mIspisivac.DodajKod("RET");
 	}
 
-	public static List<Tip_LIzraz_Const_Niz_Ime> OBRADI_lista_parametara(){
+	public static List<Ime_Velicina_Adresa> OBRADI_lista_parametara(){
 		String linija = mParser.ParsirajNovuLiniju();
-		List<Tip_LIzraz_Const_Niz_Ime> vrati;
+		List<Ime_Velicina_Adresa> vrati;
 		
 		if (linija.equals("<deklaracija_parametra>")){
-			Tip_LIzraz_Const_Niz_Ime deklaracija_parametra = OBRADI_deklaracija_parametra();
-			vrati = new ArrayList<Tip_LIzraz_Const_Niz_Ime>();
+			Ime_Velicina_Adresa deklaracija_parametra = OBRADI_deklaracija_parametra();
+			vrati = new ArrayList<Ime_Velicina_Adresa>();
 			vrati.add(deklaracija_parametra);
 			return vrati;
 		}
 		
 		if (linija.equals("<lista_parametara>")){
-			List<Tip_LIzraz_Const_Niz_Ime> lista_parametara = OBRADI_lista_parametara();
+			List<Ime_Velicina_Adresa> lista_parametara = OBRADI_lista_parametara();
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj ZAREZ
-			UniformniZnak uz_zarez = UniformniZnak.SigurnoStvaranje(linija);
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <deklaracija_parametra>
-			Tip_LIzraz_Const_Niz_Ime deklaracija_parametra = OBRADI_deklaracija_parametra();
+			Ime_Velicina_Adresa deklaracija_parametra = OBRADI_deklaracija_parametra();
 			
-			Boolean ponovljeniIdentifikator = false;
-			for (int i = 0; i < lista_parametara.size(); ++i){
-				if (lista_parametara.get(i).mIme.equals(deklaracija_parametra.mIme)){
-					ponovljeniIdentifikator = true;
-					break;
-				}				
-			}
-			if (ponovljeniIdentifikator){
-				String greska = "<lista_parametara> ::= <lista_parametara> " + uz_zarez.FormatZaIspis() + " <deklaracija_parametra>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}
 			lista_parametara.add(deklaracija_parametra);
 			vrati = lista_parametara;
 			return vrati;
@@ -133,38 +101,26 @@ public class DeklaracijeIDefinicije {
 		return null;
 	}
 	
-	public static Tip_LIzraz_Const_Niz_Ime OBRADI_deklaracija_parametra(){
+	public static Ime_Velicina_Adresa OBRADI_deklaracija_parametra(){
 		String linija = mParser.ParsirajNovuLiniju(); // ucitaj <ime_tipa>
-		Tip_Const ime_tipa = Izrazi.OBRADI_ime_tipa();
-		Tip_LIzraz_Const_Niz_Ime vrati;
+		Izrazi.OBRADI_ime_tipa();
+		Ime_Velicina_Adresa vrati;
 		linija = mParser.ParsirajNovuLiniju(); // ucitaj IDN
 		UniformniZnak uz_idn = UniformniZnak.SigurnoStvaranje(linija);
 		
 		linija = mParser.DohvatiProviriVrijednost(); // peek-aj L_UGL_ZAGRADA
 		Boolean jeNiz = false;
 		UniformniZnak uz_l_ugl_zagrada = UniformniZnak.SigurnoStvaranje(linija);
-		UniformniZnak uz_d_ugl_zagrada = null;
 		if (uz_l_ugl_zagrada != null && uz_l_ugl_zagrada.mNaziv.equals("L_UGL_ZAGRADA")){
 			jeNiz = true;
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj L_UGL_ZAGRADA
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj D_UGL_ZAGRADA
-			uz_d_ugl_zagrada = UniformniZnak.SigurnoStvaranje(linija);
 		}
 		
-		if (ime_tipa.mTip == Tip._void){
-			String greska = "<deklaracija_parametra> ::= <ime_tipa> " + uz_idn.FormatZaIspis();
-			if (jeNiz) greska += " " + uz_l_ugl_zagrada.FormatZaIspis() + " " + uz_d_ugl_zagrada.FormatZaIspis();
-			Utilities.WriteStringLineToOutputAndExit(greska);
-		}
-		
-		vrati = new Tip_LIzraz_Const_Niz_Ime();
+		vrati = new Ime_Velicina_Adresa();
 		vrati.mIme = uz_idn.mLeksickaJedinka;
-		vrati.mT = new Tip_LIzraz_Const_Niz();
-		vrati.mT.mConst = ime_tipa.mConst;
-		vrati.mT.mFun = null;
-		vrati.mT.mL_izraz = !ime_tipa.mConst;
-		vrati.mT.mNiz = jeNiz;
-		vrati.mT.mTip = ime_tipa.mTip;
+		vrati.mAdresa = jeNiz;
+		vrati.mVelicina = 4;
 		
 		return vrati;
 	}
@@ -189,78 +145,83 @@ public class DeklaracijeIDefinicije {
 	
 	public static void OBRADI_deklaracija(){
 		mParser.ParsirajNovuLiniju(); // ucitaj <ime_tipa>
-		Tip_Const ime_tipa = Izrazi.OBRADI_ime_tipa();
+		Izrazi.OBRADI_ime_tipa();
 		mParser.ParsirajNovuLiniju(); // ucitaj <lista_init_deklaratora>
-		OBRADI_lista_init_deklaratora(ime_tipa);
+		OBRADI_lista_init_deklaratora();
 		mParser.ParsirajNovuLiniju(); // ucitaj TOCKAZAREZ
 		
 		return;
 	}
 	
-	public static void OBRADI_lista_init_deklaratora(Tip_Const ime_tipa){
+	public static void OBRADI_lista_init_deklaratora(){
 		String linija = mParser.ParsirajNovuLiniju();
 		
 		if (linija.equals("<init_deklarator>")){
-			OBRADI_init_deklarator(ime_tipa);
+			OBRADI_init_deklarator();
 			return;
 		}
 		
 		if (linija.equals("<lista_init_deklaratora>")){
-			OBRADI_lista_init_deklaratora(ime_tipa);
+			OBRADI_lista_init_deklaratora();
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <ZAREZ>
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <init_deklarator>
-			OBRADI_init_deklarator(ime_tipa);
+			OBRADI_init_deklarator();
 			return;
 		}
 		
 		return;
 	}
 	
-	public static void OBRADI_init_deklarator(Tip_Const ime_tipa){
+	public static void OBRADI_init_deklarator(){
 		String linija = mParser.ParsirajNovuLiniju(); // ucitaj <izravni_deklarator>
-		Tip_Const_Niz_BrEle_TipFunk izravni_deklarator = OBRADI_izravni_deklarator(ime_tipa);
-		
+		int stogPrijeIzravnogDek_Lok = (NaredbenaStrukturaPrograma.mStog == null) ? 0 : NaredbenaStrukturaPrograma.mStog.size();
+		int stogPrijeIzravnogDek_Glo = NaredbenaStrukturaPrograma.mGlobalniDjelokrug.size();
+		Ime_Velicina_Adresa izravni_deklarator = OBRADI_izravni_deklarator();
+		int stogPoslijeIzravnogDek_Lok = (NaredbenaStrukturaPrograma.mStog == null) ? 0 : NaredbenaStrukturaPrograma.mStog.size();
+		int stogPoslijeIzravnogDek_Glo = NaredbenaStrukturaPrograma.mGlobalniDjelokrug.size();
+		int razlikaStoga_Lok = stogPoslijeIzravnogDek_Lok - stogPrijeIzravnogDek_Lok;
+		int razlikaStoga_Glo = stogPoslijeIzravnogDek_Glo - stogPrijeIzravnogDek_Glo;
 		linija = mParser.DohvatiProviriVrijednost();
-		Boolean pogreska = false, pridruzivanje = false;
 		UniformniZnak uz_op_pridruzi = UniformniZnak.SigurnoStvaranje(linija);
 		if (uz_op_pridruzi != null && uz_op_pridruzi.mNaziv.equals("OP_PRIDRUZI")){
-			pridruzivanje = true;
+			// doslo je do pridruzivanja pa makni nule sa stoga
+			if (NaredbenaStrukturaPrograma.mStog == null){
+				for (int i = 0; i < razlikaStoga_Glo; ++i){
+					mIspisivac.DodajPreMainKod("POP R0",
+							"deklaracija " + izravni_deklarator.mIme + ": biti ce pridruzivanje pa micem null inicjalizaciju");
+					NaredbenaStrukturaPrograma.mGlobalniDjelokrug.remove(NaredbenaStrukturaPrograma.mGlobalniDjelokrug.size()-1);
+				}
+
+			}else{
+				for (int i = 0; i < razlikaStoga_Lok; ++i){
+					mIspisivac.DodajKod("POP R0",
+							"deklaracija " + izravni_deklarator.mIme + ": biti ce pridruzivanje pa micem null inicjalizaciju");
+					NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+				}
+			}
+			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj OP_PRIDRUZI
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <inicijalizator>
-			LISTA_Tip_LIzraz_Const_Niz inicijalizator = OBRADI_inicijalizator();
-			
-			if (Utilities.JeBrojevniTip(izravni_deklarator.mTip) && !izravni_deklarator.mNiz){ // nije niz
-				if (!Utilities.ImplicitnaPretvorbaMoguca(inicijalizator.mLista.get(0).mTip, izravni_deklarator.mTip)) pogreska = true;
-				if (inicijalizator.mJeNiz) pogreska = true;
-			}else if (Utilities.JeBrojevniTip(izravni_deklarator.mTip) && izravni_deklarator.mNiz){ // je niz
-				if (izravni_deklarator.mBrElemenata < inicijalizator.mLista.size()) pogreska = true;
-				if (!inicijalizator.mJeNiz) pogreska = true;
-				 // svaki clan u polju inicijalizacije se mora implicitno moc pretvorit u tip izravnog_deklaratora
-				for (int i = 0; i < inicijalizator.mLista.size(); ++i)
-					if (!Utilities.ImplicitnaPretvorbaMoguca(inicijalizator.mLista.get(i).mTip, izravni_deklarator.mTip) ||
-							inicijalizator.mLista.get(i).mNiz){
-						pogreska = true;
-						break;
-					}
-			}else pogreska = true;
+			OBRADI_inicijalizator();
 		}
 		
-		if (!pridruzivanje && izravni_deklarator.mConst) pogreska = true; // nesmije biti const ako nema pridruzivanja
-		
-		if (pogreska){
-			String greska = "<init_deklarator> ::= <izravni_deklarator>";
-			if (pridruzivanje) greska += " " + uz_op_pridruzi.FormatZaIspis() + " <inicijalizator>";
-			Utilities.WriteStringLineToOutputAndExit(greska);
+		if (NaredbenaStrukturaPrograma.mStog == null){
+			mIspisivac.DodajPreMainKod("POP R0",
+					"deklaracija " + izravni_deklarator.mIme + ": dohvacanje vrijednosti");
+			mIspisivac.DodajPreMainKod("STORE R0, (G_" + izravni_deklarator.mIme.toUpperCase() + ")",
+					"deklaracija " + izravni_deklarator.mIme + ": spremanje na odrediste");
+			mIspisivac.DodajGlobalnuVarijablu("G_" + izravni_deklarator.mIme.toUpperCase(), "DW %D 0");
+			NaredbenaStrukturaPrograma.mGlobalniDjelokrug.get(NaredbenaStrukturaPrograma.mGlobalniDjelokrug.size()-1).mIme = izravni_deklarator.mIme;
+		}else{
+			NaredbenaStrukturaPrograma.mStog.get(NaredbenaStrukturaPrograma.mStog.size()-1).mIme = izravni_deklarator.mIme;
 		}
 		
 		return;
 	}
 
-	public static Tip_Const_Niz_BrEle_TipFunk OBRADI_izravni_deklarator(Tip_Const ime_tipa){
+	public static Ime_Velicina_Adresa OBRADI_izravni_deklarator(){
 		String linija = mParser.ParsirajNovuLiniju(); // ucitaj IDN
 		UniformniZnak uz_idn = UniformniZnak.SigurnoStvaranje(linija);
-		// morat ce bit null
-		ClanTabliceZnakova clT = mSTZ.DohvatiClanIzTabliceZnakovaSamoTrenutacnogDjelokruga(uz_idn.mLeksickaJedinka);
 		
 		linija = mParser.DohvatiProviriVrijednost();
 		UniformniZnak uz_1 = UniformniZnak.SigurnoStvaranje(linija);
@@ -268,172 +229,170 @@ public class DeklaracijeIDefinicije {
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj L_UGL_ZAGRADA
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj BROJ
 			UniformniZnak uz_broj = UniformniZnak.SigurnoStvaranje(linija);
+			int broj = Integer.parseInt(uz_broj.mLeksickaJedinka);
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj D_UGL_ZAGRADA
-			UniformniZnak uz_d_ugl_zagrada = UniformniZnak.SigurnoStvaranje(linija);
 			
-			Tip_Const_Niz_BrEle_TipFunk vrati = new Tip_Const_Niz_BrEle_TipFunk();
-			ClanTabliceZnakova noviCl = new ClanTabliceZnakova();
-			noviCl.mTip = vrati.mTip = ime_tipa.mTip;
-			noviCl.mL_izraz = noviCl.mConst = vrati.mConst = ime_tipa.mConst;
-			try{
-				vrati.mBrElemenata = Integer.parseInt(uz_broj.mLeksickaJedinka);
-			}catch(NumberFormatException e){
-				// Ponekad nemoze parsirat
-				vrati.mBrElemenata = 1025; // taman dosta da javi gresku ovdje dolje.
-				
+			// neznamo dali ce biti pridruzena vrijednost pri deklaraciji pa inicijaliziramo cijelo polje na nulu
+			if (NaredbenaStrukturaPrograma.mStog == null){ // u globalnom smo djelokrugu
+				for (int i = broj; i > 0; --i){
+					mIspisivac.DodajGlobalnuVarijablu("TEMP_" + Izrazi.mBrojacLabela++, "DW %D 0");
+				}
+				mIspisivac.DodajPreMainKod("MOVE TEMP_" + (Izrazi.mBrojacLabela - 1) + ", R0", "inicijalizacija polja: spremanje adrese pocetnog clana");
+				mIspisivac.DodajPreMainKod("PUSH R0");
+				Ime_Velicina_Adresa vrati = new Ime_Velicina_Adresa();
+				vrati.mIme = uz_idn.mLeksickaJedinka;
+				vrati.mAdresa = true;
+				vrati.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mGlobalniDjelokrug.add(vrati);
+				return vrati;
+			}else{ // u lokalnom smo djelokrugu
+				mIspisivac.DodajKod("MOVE %D 0, R0", "inicijaliziraj polje na nulu");
+				for (int i = 0; i < broj; ++i){
+					mIspisivac.DodajKod("PUSH R0");
+					Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+					novi.mIme = null;
+					novi.mAdresa = false;
+					novi.mVelicina = 4;
+					NaredbenaStrukturaPrograma.mStog.add(novi);
+				}
+				mIspisivac.DodajKod("PUSH R7", "inicijalizacija polja: dohvati adr zadnjeg clana na vrhu stoga (korak 1)");
+				mIspisivac.DodajKod("POP R0", "inicijalizacija polja: dohvati adr zadnjeg clana na vrhu stoga (korak 2)");
+				mIspisivac.DodajKod("ADD R0, 4, R0", "inicijalizacija polja: dohvati adr zadnjeg clana na vrhu stoga (korak 3)");
+				mIspisivac.DodajKod("ADD R0, " + 4*broj + ", R0",
+						"inicijalizacija polja: dohvati adr prvog clana");
+				mIspisivac.DodajKod("PUSH R0", "inicijalizacija polja: stavi je na stog");
+				Ime_Velicina_Adresa vrati = new Ime_Velicina_Adresa();
+				vrati.mIme = uz_idn.mLeksickaJedinka;
+				vrati.mAdresa = true;
+				vrati.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mStog.add(vrati);
+				return vrati;
 			}
-			vrati.mTipFunkcija = null;
-			noviCl.mNiz = vrati.mNiz = true;
-			noviCl.mDefinirano = true;
-			noviCl.mTipFunkcija = null;
-			
-			if (ime_tipa.mTip == Tip._void || clT != null || vrati.mBrElemenata < 1 || vrati.mBrElemenata > 1024){
-				String greska = "<izravni_deklarator> ::= " + uz_idn.FormatZaIspis() + " " + uz_1.FormatZaIspis() + " " +
-						uz_broj.FormatZaIspis() + " " + uz_d_ugl_zagrada.FormatZaIspis();
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}
-			mSTZ.DodajClanUTablicuZnakova(uz_idn.mLeksickaJedinka, noviCl);
-			return vrati;
 		}
 		
 		else if (uz_1.mNaziv.equals("L_ZAGRADA")){ // <<<<< deklaracije funkcija >>>>>
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj L_ZAGRADA
 			linija = mParser.ParsirajNovuLiniju();
 			if (linija.equals("<lista_parametara>")){ // -------- funkcija sa parametrima --------
-				List<Tip_LIzraz_Const_Niz_Ime> lista_parametara = OBRADI_lista_parametara();
+				OBRADI_lista_parametara();
 				linija = mParser.ParsirajNovuLiniju(); // ucitaj D_ZAGRADA 
-				UniformniZnak uz_d_zagrada = UniformniZnak.SigurnoStvaranje(linija);
-				Boolean vecPostojecaDeklaracijaOdgovara = true;
-
-				Tip_Const_Niz_BrEle_TipFunk vrati = new Tip_Const_Niz_BrEle_TipFunk();
-				ClanTabliceZnakova noviCl = new ClanTabliceZnakova();
-				noviCl.mTip = vrati.mTip = Tip._funkcija;
-				noviCl.mL_izraz = noviCl.mConst = vrati.mConst = ime_tipa.mConst;
-				vrati.mBrElemenata = -1; // nije polje
-				noviCl.mTipFunkcija = vrati.mTipFunkcija = new TipFunkcija();
-				vrati.mTipFunkcija.mPov = ime_tipa.mTip;
-				for (int i = 0; i < lista_parametara.size(); ++i){
-					Tip_Const_Niz tcn = new Tip_Const_Niz();
-					tcn.mTip = lista_parametara.get(i).mT.mTip;
-					tcn.mConst = lista_parametara.get(i).mT.mConst;
-					tcn.mNiz = lista_parametara.get(i).mT.mNiz;
-					vrati.mTipFunkcija.mParam.add(tcn);
-				}
-				noviCl.mNiz = vrati.mNiz = false;
-				noviCl.mDefinirano = mSTZ.JeliFunkcijaDefinirana(uz_idn.mLeksickaJedinka, noviCl.mTipFunkcija);
-				
-				if (clT != null){
-					if (!Utilities.FunkcijeIste(clT.mTipFunkcija, noviCl.mTipFunkcija))
-						vecPostojecaDeklaracijaOdgovara = false;
-				}				
-				if (!vecPostojecaDeklaracijaOdgovara){
-					String greska = "<izravni_deklarator> ::= " + uz_idn.FormatZaIspis() + " " + uz_1.FormatZaIspis() +
-							" <lista_parametara> " + uz_d_zagrada.FormatZaIspis();
-					Utilities.WriteStringLineToOutputAndExit(greska);
-				}
-				mSTZ.DodajClanUTablicuZnakova(uz_idn.mLeksickaJedinka, noviCl);
-				return vrati;
 			}
 			else{ // --------- funkcija bez parametara ----------
-				UniformniZnak uz_void = UniformniZnak.SigurnoStvaranje(linija);
 				linija = mParser.ParsirajNovuLiniju(); // ucitaj D_ZAGRADA 
-				UniformniZnak uz_d_zagrada = UniformniZnak.SigurnoStvaranje(linija);
-				Boolean vecPostojecaDeklaracijaOdgovara = true;
-
-				Tip_Const_Niz_BrEle_TipFunk vrati = new Tip_Const_Niz_BrEle_TipFunk();
-				ClanTabliceZnakova noviCl = new ClanTabliceZnakova();
-				noviCl.mTip = vrati.mTip = Tip._funkcija;
-				noviCl.mL_izraz = noviCl.mConst = vrati.mConst = ime_tipa.mConst;
-				vrati.mBrElemenata = -1; // nije polje
-				noviCl.mTipFunkcija = vrati.mTipFunkcija = new TipFunkcija();
-				vrati.mTipFunkcija.mPov = ime_tipa.mTip;
-				noviCl.mNiz = vrati.mNiz = false;
-				noviCl.mDefinirano = mSTZ.JeliFunkcijaDefinirana(uz_idn.mLeksickaJedinka, noviCl.mTipFunkcija);
-								
-				if (clT != null){
-					if (clT.mTipFunkcija.mPov != ime_tipa.mTip || clT.mTipFunkcija.mParam.size() != 0)
-						vecPostojecaDeklaracijaOdgovara = false;
+			}
+			
+			if (NaredbenaStrukturaPrograma.mStog == null){ // u globalnom smo djelokrugu
+				if (NaredbenaStrukturaPrograma.PretraziIme_Glo(uz_idn.mLeksickaJedinka) == -1){ // ako nije vec deklarirana
+					mIspisivac.DodajGlobalnuVarijablu("G_" + uz_idn.mLeksickaJedinka.toUpperCase(), "DW %D 0");
+					mIspisivac.DodajPreMainKod("MOVE %D 0, R0",
+							"deklaracija funkcije " + uz_idn.mLeksickaJedinka); // stavi nulu za adresu
+				}else{
+					mIspisivac.DodajPreMainKod("MOVE " + "F_" + uz_idn.mLeksickaJedinka.toUpperCase() + ", R0",
+							"deklaracija funkcije " + uz_idn.mLeksickaJedinka);
 				}
-				if (!vecPostojecaDeklaracijaOdgovara){
-					String greska = "<izravni_deklarator> ::= " + uz_idn.FormatZaIspis() + " " + uz_1.FormatZaIspis() + " " +
-							uz_void.FormatZaIspis() + " " + uz_d_zagrada.FormatZaIspis();
-					Utilities.WriteStringLineToOutputAndExit(greska);
+				mIspisivac.DodajPreMainKod("PUSH R0");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = uz_idn.mLeksickaJedinka;
+				novi.mAdresa = true;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mGlobalniDjelokrug.add(novi);
+				return novi;
+			}else{ // u lokalnom smo djelokrugu
+				if (NaredbenaStrukturaPrograma.PretraziIme_Glo(uz_idn.mLeksickaJedinka) == -1){ // ako nije vec deklarirana
+					mIspisivac.DodajGlobalnuVarijablu("G_" + uz_idn.mLeksickaJedinka.toUpperCase(), "DW %D 0");
+					mIspisivac.DodajKod("MOVE %D 0, R0",
+							"deklaracija funkcije " + uz_idn.mLeksickaJedinka); // stavi nulu za adresu
+				}else{
+					mIspisivac.DodajKod("MOVE " + "F_" + uz_idn.mLeksickaJedinka.toUpperCase() + ", R0",
+							"deklaracija funkcije " + uz_idn.mLeksickaJedinka);
 				}
-				mSTZ.DodajClanUTablicuZnakova(uz_idn.mLeksickaJedinka, noviCl);
-				return vrati;
+				mIspisivac.DodajKod("PUSH R0");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = uz_idn.mLeksickaJedinka;
+				novi.mAdresa = true;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mStog.add(novi);
+				return novi;
 			}
 		}
 		
 		else{ // <<<<<generiranje varijabli cjelobrojnog tipa>>>>>
-			Tip_Const_Niz_BrEle_TipFunk vrati = new Tip_Const_Niz_BrEle_TipFunk();
-			ClanTabliceZnakova noviCl = new ClanTabliceZnakova();
-			noviCl.mTip = vrati.mTip = ime_tipa.mTip;
-			noviCl.mConst = vrati.mConst = ime_tipa.mConst;
-			noviCl.mL_izraz = !noviCl.mConst;
-			vrati.mBrElemenata = -1; // nije polje
-			noviCl.mTipFunkcija = vrati.mTipFunkcija = null;
-			noviCl.mNiz = vrati.mNiz = false;
-			noviCl.mDefinirano = true;
-			
-			if (ime_tipa.mTip == Tip._void || clT != null){
-				String greska = "<izravni_deklarator> ::= " + uz_idn.FormatZaIspis();
-				Utilities.WriteStringLineToOutputAndExit(greska);
+			if (NaredbenaStrukturaPrograma.mStog != null){ // jesmo li u globalnom djelokrugu ili u funkciji
+				mIspisivac.DodajKod("MOVE %D 0, R0", "izravni deklarator cijelobrojne varijable: postavi na nulu");
+				mIspisivac.DodajKod("PUSH R0");
+				Ime_Velicina_Adresa vrati = new Ime_Velicina_Adresa();
+				vrati.mIme = uz_idn.mLeksickaJedinka;
+				vrati.mAdresa = false;
+				vrati.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mStog.add(vrati);
+				return vrati;
+			}else{
+				mIspisivac.DodajPreMainKod("MOVE %D 0, R0", "izravni deklarator cijelobrojne varijable: postavi na nulu");
+				mIspisivac.DodajPreMainKod("PUSH R0");
+				Ime_Velicina_Adresa vrati = new Ime_Velicina_Adresa();
+				vrati.mIme = uz_idn.mLeksickaJedinka;
+				vrati.mAdresa = false;
+				vrati.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mGlobalniDjelokrug.add(vrati);
+				return vrati;
 			}
-			mSTZ.DodajClanUTablicuZnakova(uz_idn.mLeksickaJedinka, noviCl);
-			return vrati;
 		}
 	}
 	
-	public static LISTA_Tip_LIzraz_Const_Niz OBRADI_inicijalizator(){
+	public static void OBRADI_inicijalizator(){
 		String linija = mParser.ParsirajNovuLiniju();
 		
 		if (linija.equals("<izraz_pridruzivanja>")){
-			Tip_LIzraz_Const_Niz izraz_pridruzivanja = Izrazi.OBRADI_izraz_pridruzivanja();
-			LISTA_Tip_LIzraz_Const_Niz vrati = new LISTA_Tip_LIzraz_Const_Niz();
-			if (Izrazi.mZadnjiPrimarniIzrazJe_NIZ_ZNAKOVA){
-				for (int i = 0; i < Izrazi.mDuljina_NIZ_ZNAKOVA + 1; ++i){
-					Tip_LIzraz_Const_Niz priv = new Tip_LIzraz_Const_Niz();
-					priv.mConst = true;
-					priv.mFun = null;
-					priv.mTip = Tip._char;
-					priv.mNiz = false;
-					priv.mL_izraz = false;
-					vrati.mLista.add(priv);
-				}
-				vrati.mJeNiz = true;
-				return vrati;
-			}else{ // nije niz znakova
-				vrati.mLista.add(izraz_pridruzivanja);
-				vrati.mJeNiz = false;
-				return vrati;
-			}
+			Izrazi.OBRADI_izraz_pridruzivanja(true);
+			return;
 		}else{ // L_VIT_ZAGRADA
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <lista_izraza_pridruzivanja>
-			List<Tip_LIzraz_Const_Niz> lista_izraza_pridruzivanja = OBRADI_lista_izraza_pridruzivanja();
+			int brojClanovaListe = OBRADI_lista_izraza_pridruzivanja();
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj D_VIT_ZAGRADA
-			LISTA_Tip_LIzraz_Const_Niz vrati = new LISTA_Tip_LIzraz_Const_Niz();
-			vrati.mLista = lista_izraza_pridruzivanja;
-			vrati.mJeNiz = true;
-			return vrati;
+			
+			if (NaredbenaStrukturaPrograma.mStog == null){ // u globalnom smo djelokrugu
+				for (int i = brojClanovaListe; i > 0; --i){
+					mIspisivac.DodajPreMainKod("POP R0", "inicijalizacija polja: dohvacanje clana br " + i);
+					mIspisivac.DodajPreMainKod("STORE R0, (TEMP_" + (Izrazi.mBrojacLabela - i) + ")", "inicijalizacija polja: spremanje clana br " + i);
+					// mIspisivac.DodajGlobalnuVarijablu("TEMP_" + Izrazi.mBrojacLabela++, "DW %D 0"); // vec dodano u izravnom deklaratoru
+					NaredbenaStrukturaPrograma.mGlobalniDjelokrug.remove(NaredbenaStrukturaPrograma.mGlobalniDjelokrug.size()-1);
+				}
+				mIspisivac.DodajPreMainKod("MOVE TEMP_" + (Izrazi.mBrojacLabela - 1) + ", R0", "inicijalizacija polja: spremanje adrese pocetnog clana");
+				mIspisivac.DodajPreMainKod("PUSH R0");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = false;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mGlobalniDjelokrug.add(novi);
+			}else{ // u lokalnom smo djelokrugu
+				mIspisivac.DodajKod("PUSH R7", "inicijalizacija polja: dohvati adr zadnjeg clana na vrhu stoga (korak 1)");
+				mIspisivac.DodajKod("POP R0", "inicijalizacija polja: dohvati adr zadnjeg clana na vrhu stoga (korak 2)");
+				mIspisivac.DodajKod("ADD R0, 4, R0", "inicijalizacija polja: dohvati adr zadnjeg clana na vrhu stoga (korak 3)");
+				mIspisivac.DodajKod("ADD R0, " + 4*(brojClanovaListe - 1) + ", R0",
+						"inicijalizacija polja: dohvati adr prvog clana");
+				mIspisivac.DodajKod("PUSH R0", "inicijalizacija polja: stavi je na stog");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = false;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mStog.add(novi);
+			}
+			return;
 		}
 	}
 	
-	public static List<Tip_LIzraz_Const_Niz> OBRADI_lista_izraza_pridruzivanja(){
+	public static int OBRADI_lista_izraza_pridruzivanja(){
 		String linija = mParser.ParsirajNovuLiniju();
 		
 		if (linija.equals("<izraz_pridruzivanja>")){
-			Tip_LIzraz_Const_Niz izraz_pridruzivanja = Izrazi.OBRADI_izraz_pridruzivanja();
-			List<Tip_LIzraz_Const_Niz> vrati = new ArrayList<Tip_LIzraz_Const_Niz>();
-			vrati.add(izraz_pridruzivanja);
-			return vrati;
+			Izrazi.OBRADI_izraz_pridruzivanja(true);
+			return 1;
 		}else{ // <lista_izraza_pridruzivanja>
-			List<Tip_LIzraz_Const_Niz> lista_izraza_pridruzivanja = OBRADI_lista_izraza_pridruzivanja();
+			int brojClanovaDosad = OBRADI_lista_izraza_pridruzivanja();
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj ZAREZ
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <izraz_pridruzivanja>
-			Tip_LIzraz_Const_Niz izraz_pridruzivanja = Izrazi.OBRADI_izraz_pridruzivanja();
-			lista_izraza_pridruzivanja.add(izraz_pridruzivanja);
-			
-			return lista_izraza_pridruzivanja;
+			Izrazi.OBRADI_izraz_pridruzivanja(true);
+			return brojClanovaDosad + 1;
 		}
 	}
 }

@@ -1,128 +1,179 @@
 package hr.unizg.fer.lab4;
-
-import java.util.ArrayList;
-import java.util.List;
 	
 public class Izrazi {
 	
-	public static StablastaTablicaZnakova mSTZ;
 	public static Parser mParser;
 	public static FRISC_ispisivac mIspisivac;
+	public static int mBrojacLabela = 0;
 	
-	// ovo je zapravo vrsta izvedenih svojstava
-	public static Boolean mZadnjiPrimarniIzrazJe_NIZ_ZNAKOVA = false;
-	public static int mDuljina_NIZ_ZNAKOVA;
-	
-	public static Tip_LIzraz_Const_Niz OBRADI_primarni_izraz(){
+	public static void OBRADI_primarni_izraz(boolean dajAdresu){
 		String linija = mParser.ParsirajNovuLiniju();
 		UniformniZnak uz = new UniformniZnak(linija);
-		Tip_LIzraz_Const_Niz vrati = new Tip_LIzraz_Const_Niz();
-		mZadnjiPrimarniIzrazJe_NIZ_ZNAKOVA = false;
+		int trenLabela = mBrojacLabela++;
 		
 		if (uz.mNaziv.equals("IDN")){
-			ClanTabliceZnakova cl = mSTZ.DohvatiClanIzTabliceZnakova(uz.mLeksickaJedinka);
-			if (cl == null) {
-				String greska = "<primarni_izraz> ::= " + uz.FormatZaIspis();
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}			
-			vrati.mL_izraz = cl.mL_izraz;
-			vrati.mTip = cl.mTip;
-			vrati.mFun = cl.mTipFunkcija;
-			vrati.mConst = cl.mConst;
-			vrati.mNiz = cl.mNiz;
-			return vrati;
+			if (NaredbenaStrukturaPrograma.mStog != null){ // jesmo li u globalnom djelokrugu ili u funkciji
+				int i = NaredbenaStrukturaPrograma.PretraziIme_Lok(uz.mLeksickaJedinka);
+				if (i == -1){ // trazena varijabla mora biti u globalnom djelokrugu
+					i = NaredbenaStrukturaPrograma.PretraziIme_Glo(uz.mLeksickaJedinka);
+					if(dajAdresu) mIspisivac.DodajKod("MOVE G_" + uz.mLeksickaJedinka.toUpperCase() + ", R0", "dohvacam adresu " + uz.mLeksickaJedinka);
+					else mIspisivac.DodajKod("LOAD R0, (G_" + uz.mLeksickaJedinka.toUpperCase() + ")", "dohvacam " + uz.mLeksickaJedinka);
+					mIspisivac.DodajKod("PUSH R0");
+					Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+					novi.mIme = null;
+					novi.mAdresa = NaredbenaStrukturaPrograma.mGlobalniDjelokrug.get(i).mAdresa;
+					novi.mVelicina = NaredbenaStrukturaPrograma.mGlobalniDjelokrug.get(i).mVelicina;
+					NaredbenaStrukturaPrograma.mStog.add(novi);
+				}else{ // trazena varijabla je u lokalnom djelokrugu
+					int dubina = NaredbenaStrukturaPrograma.DajDubinuOdVrhaStoga(i);
+					if(dajAdresu){
+						mIspisivac.DodajKod("PUSH R7", "(korak 1) dohvacam adresu: " + uz.mLeksickaJedinka);
+						mIspisivac.DodajKod("POP R0", "(korak 2) dohvacam adresu: " + uz.mLeksickaJedinka);
+						mIspisivac.DodajKod("ADD R0, 4, R0", "(korak 3) dohvacam adresu: " + uz.mLeksickaJedinka);
+						mIspisivac.DodajKod("ADD R0, " + dubina + ", R0", "(korak 4) dohvacam adresu: " + uz.mLeksickaJedinka);
+					}
+					else mIspisivac.DodajKod("LOAD R0, (R7 + " + dubina + ")", "dohvacam " + uz.mLeksickaJedinka);
+					mIspisivac.DodajKod("PUSH R0");
+					Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+					novi.mIme = null;
+					novi.mAdresa = NaredbenaStrukturaPrograma.mStog.get(i).mAdresa;
+					novi.mVelicina = NaredbenaStrukturaPrograma.mStog.get(i).mVelicina;
+					NaredbenaStrukturaPrograma.mStog.add(novi);
+				}
+				return;
+			}else{
+				// trazena varijabla mora biti u globalnom djelokrugu ako je i trenutno analizirani dio koda
+				int i = NaredbenaStrukturaPrograma.PretraziIme_Glo(uz.mLeksickaJedinka);
+				if(dajAdresu) mIspisivac.DodajPreMainKod("MOVE G_" + uz.mLeksickaJedinka.toUpperCase() + ", R0", "dohvacam adresu " + uz.mLeksickaJedinka);
+				else mIspisivac.DodajPreMainKod("LOAD R0, (G_" + uz.mLeksickaJedinka.toUpperCase() + ")", "dohvacam " + uz.mLeksickaJedinka);
+				mIspisivac.DodajPreMainKod("PUSH R0");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = NaredbenaStrukturaPrograma.mGlobalniDjelokrug.get(i).mAdresa;
+				novi.mVelicina = NaredbenaStrukturaPrograma.mGlobalniDjelokrug.get(i).mVelicina;
+				NaredbenaStrukturaPrograma.mGlobalniDjelokrug.add(novi);
+				return;
+			}
 		}
 		
 		if (uz.mNaziv.equals("BROJ")){
-			if (!Utilities.ProvjeriInt(uz.mLeksickaJedinka)) {
-				String greska = "<primarni_izraz> ::= " + uz.FormatZaIspis();
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}			
-			vrati.mL_izraz = false;
-			vrati.mTip = Tip._int;
-			vrati.mConst = false;
-			vrati.mNiz = false;
-			return vrati;
+			int baza = Utilities.VratiBazu(uz.mLeksickaJedinka);
+			int broj = Integer.parseInt(uz.mLeksickaJedinka, baza);
+			if (NaredbenaStrukturaPrograma.mStog != null){ // jesmo li u globalnom djelokrugu ili u funkciji
+				if (broj > 524287 || broj < -524287){
+					mIspisivac.DodajGlobalnuVarijablu("TEMP_" + trenLabela, "DW %D " + broj);
+					mIspisivac.DodajKod("LOAD R0, (TEMP_" + trenLabela + ")");
+					mIspisivac.DodajKod("PUSH R0");
+				}
+				else{
+					mIspisivac.DodajKod("MOVE %D " + uz.mLeksickaJedinka + ", R0");
+					mIspisivac.DodajKod("PUSH R0");
+				}
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = false;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mStog.add(novi);
+				return;
+			}else{
+				if (broj > 524287 || broj < -524287){
+					mIspisivac.DodajGlobalnuVarijablu("TEMP_" + trenLabela, "DW %D " + broj);
+					mIspisivac.DodajPreMainKod("LOAD R0, (TEMP_" + trenLabela + ")");
+					mIspisivac.DodajPreMainKod("PUSH R0");
+				}
+				else{
+					mIspisivac.DodajPreMainKod("MOVE %D " + uz.mLeksickaJedinka + ", R0");
+					mIspisivac.DodajPreMainKod("PUSH R0");
+				}
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = false;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mGlobalniDjelokrug.add(novi);
+				return;
+			}
 		}
 		
 		if (uz.mNaziv.equals("ZNAK")){
-			if (!Utilities.ProvjeriChar(uz.mLeksickaJedinka)) {
-				String greska = "<primarni_izraz> ::= " + uz.FormatZaIspis();
-				Utilities.WriteStringLineToOutputAndExit(greska);
+			int broj = Utilities.PretvoriCharUInt(uz.mLeksickaJedinka);
+			if (NaredbenaStrukturaPrograma.mStog != null){ // jesmo li u globalnom djelokrugu ili u funkciji
+				mIspisivac.DodajKod("MOVE %D " + broj + ", R0");
+				mIspisivac.DodajKod("PUSH R0");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = false;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mStog.add(novi);
+				return;
+			}else{
+				mIspisivac.DodajPreMainKod("MOVE %D " + broj + ", R0");
+				mIspisivac.DodajPreMainKod("PUSH R0");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = false;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mGlobalniDjelokrug.add(novi);
+				return;
 			}
-			vrati.mL_izraz = false;
-			vrati.mTip = Tip._char;
-			vrati.mConst = false;
-			vrati.mNiz = false;
-			return vrati;
 		}
 		
 		if (uz.mNaziv.equals("NIZ_ZNAKOVA")){
-			if (!Utilities.ProvjeriNizConstChar(uz.mLeksickaJedinka)) {
-				String greska = "<primarni_izraz> ::= " + uz.FormatZaIspis();
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}
-			vrati.mL_izraz = false;
-			vrati.mTip = Tip._char;
-			vrati.mConst = true;
-			vrati.mNiz = true;
-			mZadnjiPrimarniIzrazJe_NIZ_ZNAKOVA = true;
-			mDuljina_NIZ_ZNAKOVA = Utilities.VratiBrojZnakovaIz_NIZ_ZNAKOVA(uz.mLeksickaJedinka);
-			return vrati;
+			
+			// nije implementirano
+			return;
 		}
 		
 		if (uz.mNaziv.equals("L_ZAGRADA")){
 			linija = mParser.ParsirajNovuLiniju();	// ucitaj <izraz>
-			Tip_LIzraz_Const_Niz priv = OBRADI_izraz();
+			OBRADI_izraz(true);
 			linija = mParser.ParsirajNovuLiniju();	// ucitaj D_ZAGRADA
-			vrati.mL_izraz = priv.mL_izraz;
-			vrati.mTip = priv.mTip;
-			vrati.mConst = priv.mConst;
-			vrati.mNiz = priv.mNiz;
-			return vrati;
+			return;
 		}
-		
-		return null;
 	}
 
-	public static Tip_LIzraz_Const_Niz OBRADI_postfiks_izraz(){
+	public static void OBRADI_postfiks_izraz(boolean dajAdresu, boolean staviNaStog){
 		String linija = mParser.ParsirajNovuLiniju();
-		Tip_LIzraz_Const_Niz vrati = new Tip_LIzraz_Const_Niz();
+		int trenLabela = mBrojacLabela++;
 		
 		if (linija.equals("<primarni_izraz>")){
-			vrati = OBRADI_primarni_izraz();
-			return vrati;
+			OBRADI_primarni_izraz(dajAdresu);
+			return;
 		}
 		
 		if (linija.equals("<postfiks_izraz>")){
-			Tip_LIzraz_Const_Niz postfiks_izraz = OBRADI_postfiks_izraz();
+			OBRADI_postfiks_izraz(true, true);
 			linija = mParser.ParsirajNovuLiniju();
 			UniformniZnak uz1 = new UniformniZnak(linija);
 			
 			// indeksiranje nizova
 			if (uz1.mNaziv.equals("L_UGL_ZAGRADA")){
-				Boolean outputEnabledWasTrue = Utilities.mWriteToOutputEnabled;
-				Boolean postfiks_izraz_jeOK = true;
-				if ((postfiks_izraz.mTip != Tip._int && postfiks_izraz.mTip != Tip._char) || !postfiks_izraz.mNiz) {
-					postfiks_izraz_jeOK = false;
-					Utilities.mWriteToOutputEnabled = false; // so that OBRADI_izraz(); does not output anything
-				}			
-				
 				linija = mParser.ParsirajNovuLiniju();	// ucitaj <izraz>
-				Tip_LIzraz_Const_Niz izraz = OBRADI_izraz();
+				OBRADI_izraz(true);
 				linija = mParser.ParsirajNovuLiniju();	// D_UGL_ZAGRADA
-				UniformniZnak uz2 = new UniformniZnak(linija);
-				if (outputEnabledWasTrue) Utilities.mWriteToOutputEnabled = true; // set to true only if it is here that it was set to false (not in a recursive call)
-				if (!Utilities.ImplicitnaPretvorbaMoguca(izraz.mTip, Tip._int) || izraz.mNiz || !postfiks_izraz_jeOK){
-					String greska = "<postfiks_izraz> ::= <postfiks_izraz> " + uz1.FormatZaIspis() +
-									" <izraz> " + uz2.FormatZaIspis();
-					Utilities.WriteStringLineToOutputAndExit(greska);
+				mIspisivac.DodajKod("POP R1", "indeksiranje niza: dohvati pomak");
+				mIspisivac.DodajKod("POP R0", "indeksiranje niza: dohvati adresu adrese prvog clana");
+				mIspisivac.DodajKod("LOAD R0, (R0)", "indeksiranje niza: dohvati adresu prvog clana");
+				mIspisivac.DodajKod("ADD R0, 4, R0", "manje jumpova na ovaj nacin");
+				mIspisivac.DodajKod("ADD R1, 1, R1", "manje jumpova na ovaj nacin");
+				mIspisivac.PostaviSljedecuLabelu("IN_" + trenLabela);
+				mIspisivac.DodajKod("SUB R0, 4, R0", "dodaj pomak");
+				mIspisivac.DodajKod("SUB R1, 1, R1", "umanji broj pomaka za jedan");
+				mIspisivac.DodajKod("JR_NZ IN_" + trenLabela,
+						"dodaj jos pomaka ako je potrebno");
+				if (staviNaStog){
+					if (dajAdresu) mIspisivac.DodajKod("PUSH R0", "pushaj adresu clana");
+					else{			
+						mIspisivac.DodajKod("LOAD R1, (R0)", "dohvati clan");
+						mIspisivac.DodajKod("PUSH R1", "pushaj clan");
+					}
+					// maknuli smo dva i stavili jedan pa je razlika sljedeca:
+					NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+				}else{
+					// maknuli smo dva pa je razlika sljedeca:
+					NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+					NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
 				}
-				vrati.mTip = postfiks_izraz.mTip;
-				vrati.mL_izraz = !postfiks_izraz.mConst;
-				vrati.mConst = postfiks_izraz.mConst;
-				vrati.mNiz = false;
-				return vrati;
+				return;
 			}
 			
 			// pozivi funkcija
@@ -130,185 +181,161 @@ public class Izrazi {
 				linija = mParser.ParsirajNovuLiniju();
 				UniformniZnak uz2 = UniformniZnak.SigurnoStvaranje(linija);
 				if (uz2 != null && uz2.mNaziv.equals("D_ZAGRADA")){ // void --> pov
-					if(postfiks_izraz.mTip != Tip._funkcija || postfiks_izraz.mFun == null || postfiks_izraz.mFun.mParam.size() != 0){
-						String greska = "<postfiks_izraz> ::= <postfiks_izraz> " + uz1.FormatZaIspis() +
-								" " + uz2.FormatZaIspis();
-						Utilities.WriteStringLineToOutputAndExit(greska);
+					mIspisivac.DodajKod("POP R0", "dohvati adresu adrese funkcije");
+					mIspisivac.DodajKod("LOAD R0, (R0)", "dohvati adresu funkcije");
+					NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+					mIspisivac.DodajKod("CALL (R0)"); // pozovi adresu
+					if (staviNaStog){
+						mIspisivac.DodajKod("PUSH R6");
+						Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+						novi.mIme = null;
+						novi.mAdresa = false;
+						novi.mVelicina = 4;
+						NaredbenaStrukturaPrograma.mStog.add(novi);
 					}
-					vrati.mTip = postfiks_izraz.mFun.mPov;
-					vrati.mL_izraz = false;
-					vrati.mConst = false;
-					vrati.mNiz = false;
-					return vrati;
+					return;
 				}
 				if (linija.equals("<lista_argumenata>")){ // lista_argumenata --> pov
-					List<Tip_LIzraz_Const_Niz> lista_argumenata = OBRADI_lista_argumenata();
-					linija = mParser.ParsirajNovuLiniju(); // ucitaj D_ZAGRADA
-					uz2 = UniformniZnak.SigurnoStvaranje(linija);
-					
-					Boolean arg_Par_OK = true;
-					if (postfiks_izraz.mTip == Tip._funkcija && postfiks_izraz.mFun.mParam.size() == lista_argumenata.size()){
-						for (int i = 0; i < lista_argumenata.size(); ++i) 
-							if (!Utilities.ImplicitnaPretvorbaMoguca(lista_argumenata.get(i).mTip, postfiks_izraz.mFun.mParam.get(i).mTip) ||
-									(lista_argumenata.get(i).mNiz != postfiks_izraz.mFun.mParam.get(i).mNiz) ||
-									(lista_argumenata.get(i).mConst && !postfiks_izraz.mFun.mParam.get(i).mConst && lista_argumenata.get(i).mNiz)) // nemoguca pretvorba sa `niz(const char)` u `niz(char)`
-								arg_Par_OK = false;
-					}else arg_Par_OK = false;
-					
-					if(postfiks_izraz.mTip != Tip._funkcija || postfiks_izraz.mFun == null || postfiks_izraz.mFun.mParam.size() == 0 || !arg_Par_OK){						
-						String greska = "<postfiks_izraz> ::= <postfiks_izraz> " + uz1.FormatZaIspis() +
-								" <lista_argumenata> " + uz2.FormatZaIspis();
-						Utilities.WriteStringLineToOutputAndExit(greska);
+					mIspisivac.DodajKod("POP R0", "dohvati adresu adrese funkcije");
+					mIspisivac.DodajKod("LOAD R5, (R0)", "dohvati adresu funkcije");
+					NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+					int broj_argumenata = OBRADI_lista_argumenata();
+					linija = mParser.ParsirajNovuLiniju(); // ucitaj D_ZAGRADA	
+					mIspisivac.DodajKod("CALL (R5)"); // pozovi adresu
+					while(broj_argumenata-- != 0){ // makni sve stavljene argumente sa stoga
+						mIspisivac.DodajKod("POP R0");
+						NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
 					}
-					vrati.mTip = postfiks_izraz.mFun.mPov;
-					vrati.mL_izraz = false;
-					vrati.mConst = false;
-					vrati.mNiz = false;
-					return vrati;
+					if (staviNaStog){
+						mIspisivac.DodajKod("PUSH R6");
+						Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+						novi.mIme = null;
+						novi.mAdresa = false;
+						novi.mVelicina = 4;
+						NaredbenaStrukturaPrograma.mStog.add(novi);
+					}
+					return;
 				}
 			}
 			
 			// ++ i --
 			if (uz1.mNaziv.equals("OP_INC") || uz1.mNaziv.equals("OP_DEC")){
-				if (!postfiks_izraz.mL_izraz || postfiks_izraz.mNiz || !Utilities.ImplicitnaPretvorbaMoguca(postfiks_izraz.mTip, Tip._int)){
-					String greska = "<postfiks_izraz> ::= <postfiks_izraz> " + uz1.FormatZaIspis();
-					Utilities.WriteStringLineToOutputAndExit(greska);
+				
+				mIspisivac.DodajKod("POP R0", "postfiks izraz: dohvati adresu");
+				NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+				mIspisivac.DodajKod("LOAD R1, (R0)", "postfiks izraz: dohvati vrijednost");
+				if (uz1.mNaziv.equals("OP_DEC")) mIspisivac.DodajKod("SUB R1, 1, R2", "postfiks izraz: umanji za jedan");
+				else mIspisivac.DodajKod("ADD R1, 1, R2", "postfiks izraz: uvecaj za jedan");
+				mIspisivac.DodajKod("STORE R2, (R0)", "postfiks izraz: spremi");
+				if (staviNaStog){
+					mIspisivac.DodajKod("PUSH R1", "postfiks izraz: stavi rezultat na stog");
+					Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+					novi.mIme = null;
+					novi.mAdresa = false;
+					novi.mVelicina = 4;
+					NaredbenaStrukturaPrograma.mStog.add(novi);
 				}
-				vrati.mTip = Tip._int;
-				vrati.mL_izraz = false;
-				vrati.mConst = false;
-				vrati.mNiz = false;
-				return vrati;
+				return;
 			}
 		}
-		
-		return null;
 	}
 
-	public static List<Tip_LIzraz_Const_Niz> OBRADI_lista_argumenata(){
+	public static int OBRADI_lista_argumenata(){
 		String linija = mParser.ParsirajNovuLiniju();
-		List<Tip_LIzraz_Const_Niz> vrati;
 		
 		if (linija.equals("<izraz_pridruzivanja>")){
-			vrati = new ArrayList<Tip_LIzraz_Const_Niz>();
-			vrati.add(OBRADI_izraz_pridruzivanja());
-			return vrati;
+			OBRADI_izraz_pridruzivanja(true);
+			return 1;
 		}
 		
 		if (linija.equals("<lista_argumenata>")){
-			vrati = OBRADI_lista_argumenata();
+			int vrati = OBRADI_lista_argumenata();
 			linija = mParser.ParsirajNovuLiniju();	// ucitaj ZAREZ
 			linija = mParser.ParsirajNovuLiniju();	// ucitaj <izraz_pridruzivanja>
-			vrati.add(OBRADI_izraz_pridruzivanja());
+			OBRADI_izraz_pridruzivanja(true);
+			++vrati;
 			return vrati;
 		}
-		
-		return null;
+		return -1;
 	}
 	
-	public static Tip_LIzraz_Const_Niz OBRADI_unarni_izraz(){
+	public static void OBRADI_unarni_izraz(boolean dajAdresu, boolean staviNaStog){
 		String linija = mParser.ParsirajNovuLiniju();
-		Tip_LIzraz_Const_Niz vrati;
 		UniformniZnak uz = UniformniZnak.SigurnoStvaranje(linija);
 		
 		if (linija.equals("<postfiks_izraz>")){
-			vrati = OBRADI_postfiks_izraz();
-			return vrati;
+			OBRADI_postfiks_izraz(dajAdresu, staviNaStog);
+			return;
 		}
 		
 		if (uz != null && (uz.mNaziv.equals("OP_DEC") || uz.mNaziv.equals("OP_INC"))){
 			linija = mParser.ParsirajNovuLiniju();	// ucitaj <unarni_izraz>
-			Tip_LIzraz_Const_Niz unarni_izraz = OBRADI_unarni_izraz();
-			if (!unarni_izraz.mL_izraz || !Utilities.ImplicitnaPretvorbaMoguca(unarni_izraz.mTip, Tip._int) || unarni_izraz.mNiz){
-				String greska = "<unarni_izraz> ::= " + uz.FormatZaIspis() + " <unarni_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
+			OBRADI_unarni_izraz(true, false); // samo prvi rekurzivni poziv moze na stog stavit
+			mIspisivac.DodajKod("POP R0", "unarni izraz: dohvati adresu");
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+			mIspisivac.DodajKod("LOAD R1, (R0)", "unarni izraz: dohvati vrijednost");
+			if (uz.mNaziv.equals("OP_DEC")) mIspisivac.DodajKod("SUB R1, 1, R1", "unarni izraz: umanji za jedan");
+			else mIspisivac.DodajKod("ADD R1, 1, R1", "unarni izraz: uvecaj za jedan");
+			mIspisivac.DodajKod("STORE R1, (R0)", "unarni izraz: spremi");
+			if (staviNaStog){
+				mIspisivac.DodajKod("PUSH R1", "unarni izraz: stavi rezultat na stog");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = false;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mStog.add(novi);
 			}
-			vrati = new Tip_LIzraz_Const_Niz();
-			vrati.mTip = Tip._int;
-			vrati.mL_izraz = false;
-			vrati.mConst = false;
-			vrati.mNiz = false;
-			return vrati;
+			return;
 		}
 		
 		if (linija.equals("<unarni_operator>")){
-			// kaze uputa da <unarni_operator> ne treba provjeravati,
-			linija = mParser.ParsirajNovuLiniju();	// ali ipak treba ucitati (PLUS | MINUS | OP_TILDA | OP_NEG)
+			linija = mParser.ParsirajNovuLiniju(); // ucitaj (PLUS | MINUS | OP_TILDA | OP_NEG)
+			UniformniZnak znakOp = UniformniZnak.SigurnoStvaranje(linija);
 			linija = mParser.ParsirajNovuLiniju();	// ucitaj <cast_izraz>
-			Tip_LIzraz_Const_Niz cast_izraz = OBRADI_cast_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(cast_izraz.mTip, Tip._int) || cast_izraz.mNiz){
-				String greska = "<unarni_izraz> ::= " + "<unarni_operator>" + " <cast_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
+			OBRADI_cast_izraz(staviNaStog);
+			if (znakOp.mNaziv.equals("MINUS")){
+				mIspisivac.DodajKod("POP R0");
+				mIspisivac.DodajKod("XOR R0, -1, R0");
+				mIspisivac.DodajKod("ADD R0, 1, R0");
+				mIspisivac.DodajKod("PUSH R0");
+				return;
 			}
-			vrati = new Tip_LIzraz_Const_Niz();
-			vrati.mTip = Tip._int;
-			vrati.mL_izraz = false;
-			vrati.mConst = false;
-			vrati.mNiz = false;
-			return vrati;
 		}
-		
-		return null;
 	}
 	
-	public static Tip_LIzraz_Const_Niz OBRADI_cast_izraz(){
+	public static void OBRADI_cast_izraz(boolean staviNaStog){
 		String linija = mParser.ParsirajNovuLiniju();
-		Tip_LIzraz_Const_Niz vrati;
 		UniformniZnak uz = UniformniZnak.SigurnoStvaranje(linija);
 		
 		if (linija.equals("<unarni_izraz>")){
-			vrati = OBRADI_unarni_izraz();
-			return vrati;
+			OBRADI_unarni_izraz(false, staviNaStog);
+			return;
 		}
 		
 		if (uz != null && uz.mNaziv.equals("L_ZAGRADA")){
 			linija = mParser.ParsirajNovuLiniju();	// ucitaj <ime_tipa>
-			Tip_Const ime_tipa = OBRADI_ime_tipa();
+			OBRADI_ime_tipa();
 			linija = mParser.ParsirajNovuLiniju();	// ucitaj D_ZAGRADA
-			UniformniZnak uz_dZagrada = UniformniZnak.SigurnoStvaranje(linija);
 			linija = mParser.ParsirajNovuLiniju();	// ucitaj <cast_izraz>
-			Tip_LIzraz_Const_Niz cast_izraz = OBRADI_cast_izraz();
-			if (!Utilities.JeBrojevniTip(ime_tipa.mTip) || !Utilities.JeBrojevniTip(cast_izraz.mTip) || (cast_izraz.mNiz)){
-				String greska = "<cast_izraz> ::= " + uz.FormatZaIspis() + " <ime_tipa> " + 
-						uz_dZagrada.FormatZaIspis() + " <cast_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}
-			vrati = new Tip_LIzraz_Const_Niz();
-			vrati.mTip = ime_tipa.mTip;
-			vrati.mL_izraz = false;
-			vrati.mConst = ime_tipa.mConst;
-			vrati.mNiz = false; // <ime_tipa> nemoze proizvesti niz
-			return vrati;
+			OBRADI_cast_izraz(staviNaStog);
+			return;
 		}
-		
-		return null;
 	}
 	
-	public static Tip_Const OBRADI_ime_tipa(){
+	public static void OBRADI_ime_tipa(){
 		String linija = mParser.ParsirajNovuLiniju();
-		Tip_Const vrati;
 		UniformniZnak uz = UniformniZnak.SigurnoStvaranje(linija);
 		
 		if (linija.equals("<specifikator_tipa>")){
-			vrati = new Tip_Const();
-			vrati.mTip = OBRADI_specifikator_tipa();
-			vrati.mConst = false;
-			return vrati;
+			OBRADI_specifikator_tipa();
+			return;
 		}
 		
 		if (uz.mNaziv.equals("KR_CONST")){
 			linija = mParser.ParsirajNovuLiniju();	// ucitaj <specifikator_tipa>
-			vrati = new Tip_Const();
-			vrati.mTip = OBRADI_specifikator_tipa();
-			if (vrati.mTip == Tip._void){
-				String greska = "<ime_tipa> ::= " + uz.FormatZaIspis() + " <specifikator_tipa>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}
-			vrati.mConst = true;
-			return vrati;
+			OBRADI_specifikator_tipa();
+			return;
 		}
-		
-		return null;
 	}
 	
 	public static Tip OBRADI_specifikator_tipa(){
@@ -334,388 +361,403 @@ public class Izrazi {
 		return null;
 	}
 	
-	public static Tip_LIzraz_Const_Niz OBRADI_multiplikativni_izraz(){
+	public static void OBRADI_multiplikativni_izraz(boolean staviNaStog){
 		String linija = mParser.ParsirajNovuLiniju();
-		Tip_LIzraz_Const_Niz vrati;		
 		
 		if (linija.equals("<cast_izraz>")){
-			vrati = OBRADI_cast_izraz();
-			return vrati;
+			OBRADI_cast_izraz(staviNaStog);
+			return;
 		}
 		
 		if (linija.equals("<multiplikativni_izraz>")){
-			Tip_LIzraz_Const_Niz multiplikativni_izraz = OBRADI_multiplikativni_izraz();
+			OBRADI_multiplikativni_izraz(true);
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj (OP_PUTA | OP_DIJELI | OP_MOD)
 			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(multiplikativni_izraz.mTip, Tip._int) ||
-					multiplikativni_izraz.mNiz){
-				String greska = "<multiplikativni_izraz> ::= <multiplikativni_izraz> " + uz_operator.FormatZaIspis() + " <cast_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <cast_izraz>
-			Tip_LIzraz_Const_Niz cast_izraz = OBRADI_cast_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(cast_izraz.mTip, Tip._int) ||
-					cast_izraz.mNiz){
-				String greska = "<multiplikativni_izraz> ::= <multiplikativni_izraz> " + uz_operator.FormatZaIspis() + " <cast_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
+			OBRADI_cast_izraz(true);
+			if (uz_operator.mNaziv.equals("OP_MOD")){
+				mIspisivac.mDodajFunkcijuMod = true;
+				mIspisivac.DodajKod("CALL LF_MOD", "multiplikativni izraz (MOD):operandi su vec na stogu");
 			}
-			vrati = new Tip_LIzraz_Const_Niz();
-			vrati.mTip = Tip._int;
-			vrati.mL_izraz = false;
-			vrati.mConst = false;
-			vrati.mNiz = false;
-			return vrati;
+			else{
+				// nije jos implementirano
+			}
+			
+			mIspisivac.DodajKod("POP R0", "multiplikativni izraz: skidanje operanada");
+			mIspisivac.DodajKod("POP R0", "multiplikativni izraz: skidanje operanada");
+			// makni 2 sa stoga i stavi novi ako je potrebno
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+			
+			if (staviNaStog){
+				mIspisivac.DodajKod("PUSH R6", "multiplikativni izraz: potrebno je rezultat staviti na stog");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = false;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mStog.add(novi);
+			}
+			return;
 		}
-		
-		return null;
 	}
 	
-	public static Tip_LIzraz_Const_Niz OBRADI_aditivni_izraz(){
+	public static void OBRADI_aditivni_izraz(boolean staviNaStog){
 		String linija = mParser.ParsirajNovuLiniju();
-		Tip_LIzraz_Const_Niz vrati;		
 		
 		if (linija.equals("<multiplikativni_izraz>")){
-			vrati = OBRADI_multiplikativni_izraz();
-			return vrati;
+			OBRADI_multiplikativni_izraz(staviNaStog);
+			return;
 		}
 		
 		if (linija.equals("<aditivni_izraz>")){
-			Tip_LIzraz_Const_Niz aditivni_izraz = OBRADI_aditivni_izraz();
+			OBRADI_aditivni_izraz(true);
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj (PLUS | MINUS)
 			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(aditivni_izraz.mTip, Tip._int) ||
-					aditivni_izraz.mNiz){
-				String greska = "<aditivni_izraz> ::= <aditivni_izraz> " + uz_operator.FormatZaIspis() + " <multiplikativni_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <multiplikativni_izraz>
-			Tip_LIzraz_Const_Niz multiplikativni_izraz = OBRADI_multiplikativni_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(multiplikativni_izraz.mTip, Tip._int) ||
-					multiplikativni_izraz.mNiz){
-				String greska = "<aditivni_izraz> ::= <aditivni_izraz> " + uz_operator.FormatZaIspis() + " <multiplikativni_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
+			OBRADI_multiplikativni_izraz(true);
+			mIspisivac.DodajKod("POP R1", "aditivni izraz: pocetak");
+			mIspisivac.DodajKod("POP R0");
+			if (uz_operator.mNaziv.equals("MINUS")) mIspisivac.DodajKod("SUB R0, R1, R0");
+			else mIspisivac.DodajKod("ADD R0, R1, R0");
+			// makni 2 sa stoga i stavi novi ako je potrebno
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+			
+			if (staviNaStog){
+				mIspisivac.DodajKod("PUSH R0", "aditivni izraz: potrebno je rezultat staviti na stog");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = false;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mStog.add(novi);
 			}
-			vrati = new Tip_LIzraz_Const_Niz();
-			vrati.mTip = Tip._int;
-			vrati.mL_izraz = false;
-			vrati.mConst = false;
-			vrati.mNiz = false;
-			return vrati;
+			return;
 		}
-		
-		return null;
 	}
 
-	public static Tip_LIzraz_Const_Niz OBRADI_odnosni_izraz(){
-		String linija = mParser.ParsirajNovuLiniju();
-		Tip_LIzraz_Const_Niz vrati;		
+	public static void OBRADI_odnosni_izraz(boolean staviNaStog){
+		String linija = mParser.ParsirajNovuLiniju();	
+		int trenLabela = mBrojacLabela++;
 		
 		if (linija.equals("<aditivni_izraz>")){
-			vrati = OBRADI_aditivni_izraz();
-			return vrati;
+			OBRADI_aditivni_izraz(staviNaStog);
+			return;
 		}
 		
 		if (linija.equals("<odnosni_izraz>")){
-			Tip_LIzraz_Const_Niz odnosni_izraz = OBRADI_odnosni_izraz();
+			OBRADI_odnosni_izraz(true);
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj (OP_LT | OP_GT | OP_LTE | OP_GTE)
 			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(odnosni_izraz.mTip, Tip._int) ||
-					odnosni_izraz.mNiz){
-				String greska = "<odnosni_izraz> ::= <odnosni_izraz> " + uz_operator.FormatZaIspis() + " <aditivni_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <aditivni_izraz>
-			Tip_LIzraz_Const_Niz aditivni_izraz = OBRADI_aditivni_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(aditivni_izraz.mTip, Tip._int) ||
-					aditivni_izraz.mNiz){
-				String greska = "<odnosni_izraz> ::= <odnosni_izraz> " + uz_operator.FormatZaIspis() + " <aditivni_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
+			OBRADI_aditivni_izraz(true);
+			mIspisivac.DodajKod("POP R1", "odnosni izraz " + uz_operator.mLeksickaJedinka + ": pocetak");
+			mIspisivac.DodajKod("POP R0");
+			if (uz_operator.mNaziv.equals("OP_LT")){
+				mIspisivac.DodajKod("CMP R0, R1", "usporedba");
+				mIspisivac.DodajKod("JR_SLT OI_ISTINA_" + trenLabela, "skoci na OI_ISTINA_ ako je R0 manji");
+			}else if (uz_operator.mNaziv.equals("OP_GT")){
+				mIspisivac.DodajKod("CMP R0, R1", "usporedba");
+				mIspisivac.DodajKod("JR_SGT OI_ISTINA_" + trenLabela, "skoci na OI_ISTINA_ ako je R0 veci");
+			}else if (uz_operator.mNaziv.equals("OP_LTE")){
+				mIspisivac.DodajKod("CMP R0, R1", "usporedba");
+				mIspisivac.DodajKod("JR_SLE OI_ISTINA_" + trenLabela, "skoci na OI_ISTINA_ ako je R0 manji ili jednak");
+			}else if (uz_operator.mNaziv.equals("OP_GTE")){
+				mIspisivac.DodajKod("CMP R0, R1", "usporedba");
+				mIspisivac.DodajKod("JR_SGE OI_ISTINA_" + trenLabela, "skoci na OI_ISTINA_ ako je R0 veci ili jednak");
+			}	
+			mIspisivac.DodajKod("MOVE %D 0, R0", "izraz nije istinit");
+			mIspisivac.DodajKod("JR OI_DALJE_" + trenLabela, "preskoci postavljanje R0 u 1");
+			mIspisivac.PostaviSljedecuLabelu("OI_ISTINA_" + trenLabela);
+			mIspisivac.DodajKod("MOVE %D 1, R0", "izraz je istinit");
+			mIspisivac.PostaviSljedecuLabelu("OI_DALJE_" + trenLabela);
+			
+			// makni 2 sa stoga i stavi novi ako je potrebno
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+			
+			if (staviNaStog){
+				mIspisivac.DodajKod("PUSH R0", "odnosni izraz: postavi rezultat na stog");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = false;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mStog.add(novi);
 			}
-			vrati = new Tip_LIzraz_Const_Niz();
-			vrati.mTip = Tip._int;
-			vrati.mL_izraz = false;
-			vrati.mConst = false;
-			vrati.mNiz = false;
-			return vrati;
+			return;
 		}
-		
-		return null;
 	}
 	
-	public static Tip_LIzraz_Const_Niz OBRADI_jednakosni_izraz(){
-		String linija = mParser.ParsirajNovuLiniju();
-		Tip_LIzraz_Const_Niz vrati;		
+	public static void OBRADI_jednakosni_izraz(boolean staviNaStog){
+		String linija = mParser.ParsirajNovuLiniju();	
+		int trenLabela = mBrojacLabela++;
 		
 		if (linija.equals("<odnosni_izraz>")){
-			vrati = OBRADI_odnosni_izraz();
-			return vrati;
+			OBRADI_odnosni_izraz(staviNaStog);
+			return;
 		}
 		
 		if (linija.equals("<jednakosni_izraz>")){
-			Tip_LIzraz_Const_Niz jednakosni_izraz = OBRADI_jednakosni_izraz();
+			OBRADI_jednakosni_izraz(true);
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj (OP_EQ | OP_NEQ)
 			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(jednakosni_izraz.mTip, Tip._int) ||
-					jednakosni_izraz.mNiz){
-				String greska = "<jednakosni_izraz> ::= <jednakosni_izraz> " + uz_operator.FormatZaIspis() + " <odnosni_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <odnosni_izraz>
-			Tip_LIzraz_Const_Niz odnosni_izraz = OBRADI_odnosni_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(odnosni_izraz.mTip, Tip._int) ||
-					odnosni_izraz.mNiz){
-				String greska = "<jednakosni_izraz> ::= <jednakosni_izraz> " + uz_operator.FormatZaIspis() + " <odnosni_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
+			OBRADI_odnosni_izraz(true);
+			
+			mIspisivac.DodajKod("POP R1", "operator jednakosnog izraza " + uz_operator.mLeksickaJedinka + ": pocetak");
+			mIspisivac.DodajKod("POP R0");
+			if (uz_operator.mNaziv.equals("OP_EQ")){
+				mIspisivac.DodajKod("CMP R0, R1", "usporedba");
+				mIspisivac.DodajKod("JR_EQ JI_ISTINA_" + trenLabela, "skoci na JI_ISTINA_ ako je R0 manji");
+			}else if (uz_operator.mNaziv.equals("OP_NEQ")){
+				mIspisivac.DodajKod("CMP R0, R1", "usporedba");
+				mIspisivac.DodajKod("JR_NEQ JI_ISTINA_" + trenLabela, "skoci na JI_ISTINA_ ako je R0 veci");
 			}
-			vrati = new Tip_LIzraz_Const_Niz();
-			vrati.mTip = Tip._int;
-			vrati.mL_izraz = false;
-			vrati.mConst = false;
-			vrati.mNiz = false;
-			return vrati;
+			mIspisivac.DodajKod("MOVE %D 0, R0", "izraz nije istinit");
+			mIspisivac.DodajKod("JR JI_DALJE_" + trenLabela, "preskoci postavljanje R0 u 1");
+			mIspisivac.PostaviSljedecuLabelu("JI_ISTINA_" + trenLabela);
+			mIspisivac.DodajKod("MOVE %D 1, R0", "izraz je istinit");
+			mIspisivac.PostaviSljedecuLabelu("JI_DALJE_" + trenLabela);
+			
+			// makni 2 sa stoga i stavi novi ako je potrebno
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+			if (staviNaStog){
+				mIspisivac.DodajKod("PUSH R0", "postavi rezultat na stog");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = false;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mStog.add(novi);
+			}
+			return;
 		}
-		
-		return null;
 	}
 
-	public static Tip_LIzraz_Const_Niz OBRADI_bin_i_izraz(){
-		String linija = mParser.ParsirajNovuLiniju();
-		Tip_LIzraz_Const_Niz vrati;		
+	public static void OBRADI_bin_i_izraz(boolean staviNaStog){
+		String linija = mParser.ParsirajNovuLiniju();	
 		
 		if (linija.equals("<jednakosni_izraz>")){
-			vrati = OBRADI_jednakosni_izraz();
-			return vrati;
+			OBRADI_jednakosni_izraz(staviNaStog);
+			return;
 		}
 		
 		if (linija.equals("<bin_i_izraz>")){
-			Tip_LIzraz_Const_Niz bin_i_izraz = OBRADI_bin_i_izraz();
+			OBRADI_bin_i_izraz(true);
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj OP_BIN_I
-			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(bin_i_izraz.mTip, Tip._int) ||
-					bin_i_izraz.mNiz){
-				String greska = "<bin_i_izraz> ::= <bin_i_izraz> " + uz_operator.FormatZaIspis() + " <jednakosni_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}
+			UniformniZnak.SigurnoStvaranje(linija);
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <jednakosni_izraz>
-			Tip_LIzraz_Const_Niz jednakosni_izraz = OBRADI_jednakosni_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(jednakosni_izraz.mTip, Tip._int) ||
-					jednakosni_izraz.mNiz){
-				String greska = "<bin_i_izraz> ::= <bin_i_izraz> " + uz_operator.FormatZaIspis() + " <jednakosni_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
+			OBRADI_jednakosni_izraz(true);
+			mIspisivac.DodajKod("POP R1", "bin i izraz");
+			mIspisivac.DodajKod("POP R0", "bin i izraz");
+			mIspisivac.DodajKod("AND R0, R1, R0", "bin i izraz");
+			
+			// makni 2 sa stoga i stavi novi ako je potrebno
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+			if (staviNaStog){
+				mIspisivac.DodajKod("PUSH R0", "bin i izraz");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = false;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mStog.add(novi);
 			}
-			vrati = new Tip_LIzraz_Const_Niz();
-			vrati.mTip = Tip._int;
-			vrati.mL_izraz = false;
-			vrati.mConst = false;
-			vrati.mNiz = false;
-			return vrati;
+			return;
 		}
-		
-		return null;
 	}
 
-	public static Tip_LIzraz_Const_Niz OBRADI_bin_xili_izraz(){
-		String linija = mParser.ParsirajNovuLiniju();
-		Tip_LIzraz_Const_Niz vrati;		
+	public static void OBRADI_bin_xili_izraz(boolean staviNaStog){
+		String linija = mParser.ParsirajNovuLiniju();	
 		
 		if (linija.equals("<bin_i_izraz>")){
-			vrati = OBRADI_bin_i_izraz();
-			return vrati;
+			OBRADI_bin_i_izraz(staviNaStog);
+			return;
 		}
 		
 		if (linija.equals("<bin_xili_izraz>")){
-			Tip_LIzraz_Const_Niz bin_xili_izraz = OBRADI_bin_xili_izraz();
+			OBRADI_bin_xili_izraz(true);
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj OP_BIN_XILI
-			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(bin_xili_izraz.mTip, Tip._int) ||
-					bin_xili_izraz.mNiz){
-				String greska = "<bin_xili_izraz> ::= <bin_xili_izraz> " + uz_operator.FormatZaIspis() + " <bin_i_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}			
+			UniformniZnak.SigurnoStvaranje(linija);		
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <bin_i_izraz>
-			Tip_LIzraz_Const_Niz bin_i_izraz = OBRADI_bin_i_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(bin_i_izraz.mTip, Tip._int) ||
-					bin_i_izraz.mNiz){
-				String greska = "<bin_xili_izraz> ::= <bin_xili_izraz> " + uz_operator.FormatZaIspis() + " <bin_i_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}
-			vrati = new Tip_LIzraz_Const_Niz();
-			vrati.mTip = Tip._int;
-			vrati.mL_izraz = false;
-			vrati.mConst = false;
-			vrati.mNiz = false;
-			return vrati;
-		}
+			OBRADI_bin_i_izraz(true);
+			mIspisivac.DodajKod("POP R1", "bin xili izraz");
+			mIspisivac.DodajKod("POP R0", "bin xili izraz");
+			mIspisivac.DodajKod("XOR R0, R1, R0", "bin xili izraz");
 		
-		return null;
+			// makni 2 sa stoga i stavi novi
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);	
+			if (staviNaStog){
+				mIspisivac.DodajKod("PUSH R0", "bin xili izraz");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = false;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mStog.add(novi);
+			}
+			return;
+		}
 	}
 	
-	public static Tip_LIzraz_Const_Niz OBRADI_bin_ili_izraz(){
-		String linija = mParser.ParsirajNovuLiniju();
-		Tip_LIzraz_Const_Niz vrati;		
+	public static void OBRADI_bin_ili_izraz(boolean staviNaStog){
+		String linija = mParser.ParsirajNovuLiniju();	
 		
 		if (linija.equals("<bin_xili_izraz>")){
-			vrati = OBRADI_bin_xili_izraz();
-			return vrati;
+			OBRADI_bin_xili_izraz(staviNaStog);
+			return;
 		}
 		
 		if (linija.equals("<bin_ili_izraz>")){
-			Tip_LIzraz_Const_Niz bin_ili_izraz = OBRADI_bin_ili_izraz();
+			OBRADI_bin_ili_izraz(true);
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj OP_BIN_ILI
-			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(bin_ili_izraz.mTip, Tip._int) ||
-					bin_ili_izraz.mNiz){
-				String greska = "<bin_ili_izraz> ::= <bin_ili_izraz> " + uz_operator.FormatZaIspis() + " <bin_xili_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}			
+			UniformniZnak.SigurnoStvaranje(linija);		
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <bin_xili_izraz>
-			Tip_LIzraz_Const_Niz bin_xili_izraz = OBRADI_bin_xili_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(bin_xili_izraz.mTip, Tip._int) ||
-					bin_xili_izraz.mNiz){
-				String greska = "<bin_ili_izraz> ::= <bin_ili_izraz> " + uz_operator.FormatZaIspis() + " <bin_xili_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}
-			vrati = new Tip_LIzraz_Const_Niz();
-			vrati.mTip = Tip._int;
-			vrati.mL_izraz = false;
-			vrati.mConst = false;
-			vrati.mNiz = false;
-			return vrati;
-		}
+			OBRADI_bin_xili_izraz(true);
+			mIspisivac.DodajKod("POP R1", "bin ili izraz");
+			mIspisivac.DodajKod("POP R0", "bin ili izraz");
+			mIspisivac.DodajKod("OR R0, R1, R0", "bin ili izraz");
 		
-		return null;
+			// makni 2 sa stoga i stavi novi ako je potrebno
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);	
+			
+			if (staviNaStog){
+				mIspisivac.DodajKod("PUSH R0", "bin ili izraz");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = false;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mStog.add(novi);
+			}
+			return;
+		}
 	}
 
-	public static Tip_LIzraz_Const_Niz OBRADI_log_i_izraz(){
+	public static void OBRADI_log_i_izraz(boolean staviNaStog){
 		String linija = mParser.ParsirajNovuLiniju();
-		Tip_LIzraz_Const_Niz vrati;		
+		int trenLabela = mBrojacLabela++;
 		
 		if (linija.equals("<bin_ili_izraz>")){
-			vrati = OBRADI_bin_ili_izraz();
-			return vrati;
+			OBRADI_bin_ili_izraz(staviNaStog);
+			return;
 		}
 		
 		if (linija.equals("<log_i_izraz>")){
-			Tip_LIzraz_Const_Niz log_i_izraz = OBRADI_log_i_izraz();
+			OBRADI_log_i_izraz(true);
+			mIspisivac.DodajKod("POP R0", "log i izraz: provjeri rani uvjet");
+			mIspisivac.DodajKod("CMP R0, 0");
+			mIspisivac.DodajKod("JR_EQ LII_KRAJ_" + trenLabela, "log i izraz: ako je rani uvjet zadovoljen preskoci ostatak logickog izraza");
+			mIspisivac.DodajKod("PUSH R0", "log i izraz: ako nije vrati R0 na stog za daljnju obradu");
+			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj OP_I
-			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(log_i_izraz.mTip, Tip._int) ||
-					log_i_izraz.mNiz){
-				String greska = "<log_i_izraz> ::= <log_i_izraz> " + uz_operator.FormatZaIspis() + " <bin_ili_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <bin_ili_izraz>
-			Tip_LIzraz_Const_Niz bin_ili_izraz = OBRADI_bin_ili_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(bin_ili_izraz.mTip, Tip._int) ||
-					bin_ili_izraz.mNiz){
-				String greska = "<log_i_izraz> ::= <log_i_izraz> " + uz_operator.FormatZaIspis() + " <bin_ili_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
+			OBRADI_bin_ili_izraz(true);
+			
+			mIspisivac.DodajKod("POP R1", "log i izraz");
+			mIspisivac.DodajKod("POP R0", "log i izraz");
+			mIspisivac.DodajKod("AND R0, R1, R0", "log i izraz");
+			// makni 2 sa stoga i stavi novi ako je potrebno
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+			mIspisivac.PostaviSljedecuLabelu("LII_KRAJ_" + trenLabela);
+			if (staviNaStog){
+				mIspisivac.DodajKod("PUSH R0", "log i izraz");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = false;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mStog.add(novi);
 			}
-			vrati = new Tip_LIzraz_Const_Niz();
-			vrati.mTip = Tip._int;
-			vrati.mL_izraz = false;
-			vrati.mConst = false;
-			vrati.mNiz = false;
-			return vrati;
+			return;
 		}
-		
-		return null;
 	}
 
-	public static Tip_LIzraz_Const_Niz OBRADI_log_ili_izraz(){
-		String linija = mParser.ParsirajNovuLiniju();
-		Tip_LIzraz_Const_Niz vrati;		
+	public static void OBRADI_log_ili_izraz(boolean staviNaStog){
+		String linija = mParser.ParsirajNovuLiniju();	
+		int trenLabela = mBrojacLabela++;
 		
 		if (linija.equals("<log_i_izraz>")){
-			vrati = OBRADI_log_i_izraz();
-			return vrati;
+			OBRADI_log_i_izraz(staviNaStog);
+			return;
 		}
 		
 		if (linija.equals("<log_ili_izraz>")){
-			Tip_LIzraz_Const_Niz log_ili_izraz = OBRADI_log_ili_izraz();
+			OBRADI_log_ili_izraz(true);
+			mIspisivac.DodajKod("POP R0", "log ili izraz: provjeri rani uvjet");
+			mIspisivac.DodajKod("CMP R0, 1");
+			mIspisivac.DodajKod("JR_EQ LIILI_KRAJ_" + trenLabela, "log ili izraz: ako je rani uvjet zadovoljen preskoci ostatak logickog izraza");
+			mIspisivac.DodajKod("PUSH R0", "log ili izraz: ako nije vrati R0 na stog za daljnju obradu");
+			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj OP_ILI
-			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(log_ili_izraz.mTip, Tip._int) ||
-					log_ili_izraz.mNiz){
-				String greska = "<log_ili_izraz> ::= <log_ili_izraz> " + uz_operator.FormatZaIspis() + " <log_i_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <log_i_izraz>
-			Tip_LIzraz_Const_Niz log_i_izraz = OBRADI_log_i_izraz();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(log_i_izraz.mTip, Tip._int) ||
-					log_i_izraz.mNiz){
-				String greska = "<log_ili_izraz> ::= <log_ili_izraz> " + uz_operator.FormatZaIspis() + " <log_i_izraz>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}
-			vrati = new Tip_LIzraz_Const_Niz();
-			vrati.mTip = Tip._int;
-			vrati.mL_izraz = false;
-			vrati.mConst = false;
-			vrati.mNiz = false;
-			return vrati;
+			OBRADI_log_i_izraz(true);
+			
+			mIspisivac.DodajKod("POP R1", "log ili izraz");
+			mIspisivac.DodajKod("POP R0", "log ili izraz");
+			mIspisivac.DodajKod("OR R0, R1, R0", "log ili izraz");
+			// makni 2 sa stoga i stavi novi ako je potrebno
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+			mIspisivac.PostaviSljedecuLabelu("LIILI_KRAJ_" + trenLabela);
+			if (staviNaStog){
+				mIspisivac.DodajKod("PUSH R0", "log ili izraz");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = false;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mStog.add(novi);
+			}			
+			return;
 		}
-		
-		return null;
 	}
 
-	public static Tip_LIzraz_Const_Niz OBRADI_izraz_pridruzivanja(){
-		String linija = mParser.ParsirajNovuLiniju();
-		Tip_LIzraz_Const_Niz vrati;		
+	public static void OBRADI_izraz_pridruzivanja(boolean staviNaStog){
+		String linija = mParser.ParsirajNovuLiniju();	
 		
 		if (linija.equals("<log_ili_izraz>")){
-			vrati = OBRADI_log_ili_izraz();
-			return vrati;
+			OBRADI_log_ili_izraz(staviNaStog);
+			return;
 		}
 		
 		if (linija.equals("<postfiks_izraz>")){
-			Tip_LIzraz_Const_Niz postfiks_izraz = OBRADI_postfiks_izraz();
-			linija = mParser.ParsirajNovuLiniju(); // ucitaj OP_PRIDRUZI
-			UniformniZnak uz_operator = UniformniZnak.SigurnoStvaranje(linija);
-			if (!postfiks_izraz.mL_izraz){
-				String greska = "<izraz_pridruzivanja> ::= <postfiks_izraz> " + uz_operator.FormatZaIspis() + " <izraz_pridruzivanja>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}			
+			OBRADI_postfiks_izraz(true, true);
+			linija = mParser.ParsirajNovuLiniju(); // ucitaj OP_PRIDRUZI			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <izraz_pridruzivanja>
-			Tip_LIzraz_Const_Niz izraz_pridruzivanja = OBRADI_izraz_pridruzivanja();
-			if (!Utilities.ImplicitnaPretvorbaMoguca(izraz_pridruzivanja.mTip, postfiks_izraz.mTip) ||
-					(izraz_pridruzivanja.mNiz != postfiks_izraz.mNiz)){
-				String greska = "<izraz_pridruzivanja> ::= <postfiks_izraz> " + uz_operator.FormatZaIspis() + " <izraz_pridruzivanja>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
+			OBRADI_izraz_pridruzivanja(true);
+			mIspisivac.DodajKod("POP R1", "izraz pridruzivanja: dohvati vrijednost");
+			mIspisivac.DodajKod("POP R0", "izraz pridruzivanja: dohvati adresu");
+			mIspisivac.DodajKod("STORE R1, (R0)", "izraz pridruzivanja: spremi");			
+			
+			// makni 2 sa stoga i stavi novi ako je potrebno
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);
+			NaredbenaStrukturaPrograma.mStog.remove(NaredbenaStrukturaPrograma.mStog.size()-1);	
+						
+			if (staviNaStog){
+				mIspisivac.DodajKod("PUSH R1", "izraz pridruzivanja: potrebno je staviti na stog");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = false;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mStog.add(novi);
 			}
-			vrati = new Tip_LIzraz_Const_Niz();
-			vrati.mTip = postfiks_izraz.mTip;
-			vrati.mL_izraz = false;
-			vrati.mConst = postfiks_izraz.mConst;
-			vrati.mNiz = false;
-			return vrati;
+			return;
 		}
-		
-		return null;
 	}
 
-	public static Tip_LIzraz_Const_Niz OBRADI_izraz(){
+	public static void OBRADI_izraz(boolean staviNaStog){
 		String linija = mParser.ParsirajNovuLiniju();
-		Tip_LIzraz_Const_Niz vrati;		
 		
 		if (linija.equals("<izraz_pridruzivanja>")){
-			vrati = OBRADI_izraz_pridruzivanja();
-			return vrati;
+			OBRADI_izraz_pridruzivanja(staviNaStog);
+			return;
 		}
 		
 		if (linija.equals("<izraz>")){
-			OBRADI_izraz();
+			OBRADI_izraz(false);
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj ZAREZ
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <izraz_pridruzivanja>
-			Tip_LIzraz_Const_Niz izraz_pridruzivanja = OBRADI_izraz_pridruzivanja();
-			
-			vrati = new Tip_LIzraz_Const_Niz();
-			vrati.mTip = izraz_pridruzivanja.mTip;
-			vrati.mL_izraz = false;
-			vrati.mConst = izraz_pridruzivanja.mConst;
-			vrati.mNiz = izraz_pridruzivanja.mNiz;;
-			return vrati;
+			OBRADI_izraz_pridruzivanja(staviNaStog);
+			return;
 		}
-		
-		return null;
 	}
 }

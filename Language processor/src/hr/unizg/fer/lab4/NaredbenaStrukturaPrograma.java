@@ -1,18 +1,53 @@
 package hr.unizg.fer.lab4;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class NaredbenaStrukturaPrograma {
 	
-	public static StablastaTablicaZnakova mSTZ;
 	public static Parser mParser;
 	public static FRISC_ispisivac mIspisivac;
+	public static List<Ime_Velicina_Adresa> mStog = null; // kada je nula onda smo u globalnom djelokrugu
+	public static List<Ime_Velicina_Adresa> mGlobalniDjelokrug = new ArrayList<Ime_Velicina_Adresa>();
+	public static List<Integer> mStanjaStogaDjelokruga = new ArrayList<Integer>();
+	public static int mBrojacLabela = 0;
+	
+	public static int PretraziIme_Lok(String imeVar){
+		// pretrazuje stog (lokalni djelokrug)
+		for (int i = mStog.size() - 1; i >= 0; --i){
+			if (mStog.get(i).mIme != null && mStog.get(i).mIme.equals(imeVar)) return i;
+		}
+		return -1;
+	}
+	
+	public static int DajDubinuOdVrhaStoga(int indexVarijable){
+		int dubina = 0;
+		for (int i = mStog.size() - 1; i >= 0 && i != indexVarijable; --i) dubina += mStog.get(i).mVelicina;
+		return dubina;
+	}
+	
+	public static int PretraziIme_Glo(String imeVar){
+		// pretrazuje globalni djelokrug
+		for (int i = mGlobalniDjelokrug.size() - 1; i >= 0; --i){
+			if (mGlobalniDjelokrug.get(i).mIme != null && mGlobalniDjelokrug.get(i).mIme.equals(imeVar)) return i;
+		}
+		return -1;
+	}
 	
 	public static void OBRADI_slozena_naredba(){
 		String linija = mParser.ParsirajNovuLiniju(); // ucitaj L_VIT_ZAGRADA
 		linija = mParser.ParsirajNovuLiniju();
+		mStanjaStogaDjelokruga.add(mStog.size());
 		
 		if (linija.equals("<lista_naredbi>")){
 			OBRADI_lista_naredbi();
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj D_VIT_ZAGRADA
+			//makni sa stoga sav visak tako da ostane samo ono sto je bilo na pocetku ulaza u djelokrug
+			for (int i = mStog.size(); i > mStanjaStogaDjelokruga.get(mStanjaStogaDjelokruga.size() - 1); --i){
+				mStog.remove(i - 1);
+				mIspisivac.DodajKod("POP R0", "ciscenje dijela stoga prije kraja djelokruga");
+			}
+			mStanjaStogaDjelokruga.remove(mStanjaStogaDjelokruga.size() - 1);
 			return;
 		}
 		
@@ -21,6 +56,12 @@ public class NaredbenaStrukturaPrograma {
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <lista_naredbi>
 			OBRADI_lista_naredbi();
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj D_VIT_ZAGRADA
+			//makni sa stoga sav visak tako da ostane samo ono sto je bilo na pocetku ulaza u djelokrug
+			for (int i = mStog.size(); i > mStanjaStogaDjelokruga.get(mStanjaStogaDjelokruga.size() - 1); --i){
+				mStog.remove(i - 1);
+				mIspisivac.DodajKod("POP R0", "ciscenje dijela stoga prije kraja djelokruga");
+			}
+			mStanjaStogaDjelokruga.remove(mStanjaStogaDjelokruga.size() - 1);
 			return;
 		}
 	}
@@ -45,14 +86,12 @@ public class NaredbenaStrukturaPrograma {
 		String linija = mParser.ParsirajNovuLiniju();
 		
 		if (linija.equals("<slozena_naredba>")){
-			mSTZ.UdjiUNoviCvor(null);
 			OBRADI_slozena_naredba();
-			mSTZ.IzadjiIzCvora();
 			return;
 		}
 		
 		if (linija.equals("<izraz_naredba>")){
-			OBRADI_izraz_naredba();
+			OBRADI_izraz_naredba(false);
 			return;
 		}
 		
@@ -72,130 +111,137 @@ public class NaredbenaStrukturaPrograma {
 		}
 	}
 	
-	public static Tip_LIzraz_Const_Niz OBRADI_izraz_naredba(){
+	public static void OBRADI_izraz_naredba(boolean dodajNaStog){
 		String linija = mParser.ParsirajNovuLiniju();
 		UniformniZnak uz = UniformniZnak.SigurnoStvaranje(linija);
-		Tip_LIzraz_Const_Niz vrati;
 		
 		if (uz != null && uz.mNaziv.equals("TOCKAZAREZ")){
-			vrati = new Tip_LIzraz_Const_Niz();
-			vrati.mTip = Tip._int;
-			vrati.mConst = false;
-			vrati.mNiz = false;
-			vrati.mL_izraz = false;
-			return vrati;
+			if (dodajNaStog){
+				mIspisivac.DodajKod("MOVE %D 1 R0");
+				mIspisivac.DodajKod("PUSH R0");
+				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+				novi.mIme = null;
+				novi.mAdresa = false;
+				novi.mVelicina = 4;
+				NaredbenaStrukturaPrograma.mStog.add(novi);
+			}
+			return;
 		}
 		
 		if (linija.equals("<izraz>")){
-			vrati = Izrazi.OBRADI_izraz();
+			Izrazi.OBRADI_izraz(dodajNaStog);
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj TOCKAZAREZ
-			return vrati;
+			return;
 		}
-		
-		return null;
 	}
 	
 	public static void OBRADI_naredba_grananja(){
 		String linija = mParser.ParsirajNovuLiniju(); // ucitaj KR_IF
-		UniformniZnak uz_kr_if = UniformniZnak.SigurnoStvaranje(linija);
 		linija = mParser.ParsirajNovuLiniju(); // ucitaj L_ZAGRADA
-		UniformniZnak uz_l_zagrada = UniformniZnak.SigurnoStvaranje(linija);
 		linija = mParser.ParsirajNovuLiniju(); // ucitaj <izraz>
-		Tip_LIzraz_Const_Niz izraz = Izrazi.OBRADI_izraz();
+		Izrazi.OBRADI_izraz(true);
 		linija = mParser.ParsirajNovuLiniju(); // ucitaj D_ZAGRADA
-		UniformniZnak uz_d_zagrada = UniformniZnak.SigurnoStvaranje(linija);
+		
+		mIspisivac.DodajKod("POP R0", "if naredba: skini izraz sa stoga");
+		mStog.remove(mStog.size() - 1);
+		mIspisivac.DodajKod("CMP R0, 0", "if naredba: provjeri ako je izraz jednak 0");
+		int trenLabela = mBrojacLabela++;
+		mIspisivac.DodajKod("JR_EQ NG_DALJE_1_" + trenLabela, "if naredba: ako je onda preskoci dio koda");
+		
 		linija = mParser.ParsirajNovuLiniju(); // ucitaj <naredba>1
 		OBRADI_naredba();
 		
 		// ima li jos i "else"?
-		Boolean elseExists = false;
+		Boolean elsePostoji = false;
 		linija = mParser.DohvatiProviriVrijednost();
 		UniformniZnak uz_else = null;
 		if (linija != null){
 			uz_else = UniformniZnak.SigurnoStvaranje(linija);
-			if (uz_else != null && uz_else.mNaziv.equals("KR_ELSE")) elseExists = true;
+			if (uz_else != null && uz_else.mNaziv.equals("KR_ELSE")) elsePostoji = true;
 		}
 		
-		// ispis u slucaju pogreske
-		if (!Utilities.ImplicitnaPretvorbaMoguca(izraz.mTip, Tip._int) || izraz.mNiz){
-			String greska = "<naredba_grananja> ::= " + uz_kr_if.FormatZaIspis() + " " +
-					uz_l_zagrada.FormatZaIspis() + " <izraz> " + uz_d_zagrada.FormatZaIspis() + " <naredba>";
-			if (elseExists) greska += " " + uz_else.FormatZaIspis() + " <naredba>";
-			Utilities.WriteStringLineToOutputAndExit(greska);
-		}
-		
-		if (elseExists){
+		if (elsePostoji){
+			mIspisivac.DodajKod("JR NG_DALJE_2_" + trenLabela, "if naredba: preskoci ELSE dio koda");
+			mIspisivac.PostaviSljedecuLabelu("NG_DALJE_1_" + trenLabela);
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj KR_ELSE (jer smo ga dobavili samo privirkivanjem)
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <naredba>2
 			OBRADI_naredba();
-			return;
+			mIspisivac.PostaviSljedecuLabelu("NG_DALJE_2_" + trenLabela);
+		}else{
+			mIspisivac.PostaviSljedecuLabelu("NG_DALJE_1_" + trenLabela);
 		}
 	}
 	
 	public static void OBRADI_naredba_petlje(){
 		String linija = mParser.ParsirajNovuLiniju();
 		UniformniZnak uz = UniformniZnak.SigurnoStvaranje(linija);
+		int trenLabela = mBrojacLabela++;
 		
 		// while petlja ??
 		if (uz != null && uz.mNaziv.equals("KR_WHILE")){
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj L_ZAGRADA
-			UniformniZnak uz_l_zagrada = UniformniZnak.SigurnoStvaranje(linija);
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <izraz>
-			Tip_LIzraz_Const_Niz izraz = Izrazi.OBRADI_izraz();
+			
+			mIspisivac.PostaviSljedecuLabelu("NP_UVIJET_" + trenLabela);
+			Izrazi.OBRADI_izraz(true);
+			mIspisivac.DodajKod("POP R0", "while naredba: skini izraz (uvijet) sa stoga");
+			mStog.remove(mStog.size() - 1);
+			mIspisivac.DodajKod("CMP R0, 0", "while naredba: provjeri ako je izraz jednak 0");
+			mIspisivac.DodajKod("JR_EQ NP_KRAJ_" + trenLabela, "while naredba: ako je onda izadji iz petlje");
+			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj D_ZAGRADA
-			UniformniZnak uz_d_zagrada = UniformniZnak.SigurnoStvaranje(linija);
-			if (!Utilities.ImplicitnaPretvorbaMoguca(izraz.mTip, Tip._int) || izraz.mNiz){
-				String greska = "<naredba_petlje> ::= " + uz.FormatZaIspis() + " " +
-						uz_l_zagrada.FormatZaIspis() + " <izraz> " + uz_d_zagrada.FormatZaIspis() + " <naredba>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <naredba>
 			OBRADI_naredba();
+			mIspisivac.DodajKod("JR NP_UVIJET_" + trenLabela, "while naredba: povratak na uvijet petlje");
+			mIspisivac.PostaviSljedecuLabelu("NP_KRAJ_" + trenLabela);
 			return;
 		}
 		
 		// for petlja ??
 		if (uz != null && uz.mNaziv.equals("KR_FOR")){
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj L_ZAGRADA
-			UniformniZnak uz_l_zagrada = UniformniZnak.SigurnoStvaranje(linija);
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <izraz_naredba>1
-			OBRADI_izraz_naredba();
-			linija = mParser.ParsirajNovuLiniju(); // ucitaj <izraz_naredba>2			
-			Tip_LIzraz_Const_Niz izraz_naredba2 = OBRADI_izraz_naredba();
+			OBRADI_izraz_naredba(false);
 			
-			Boolean writeToOutputEnabledWasTrue = Utilities.mWriteToOutputEnabled;
-			Boolean izraz_naredba2_jeOK = true;
-			if (!Utilities.ImplicitnaPretvorbaMoguca(izraz_naredba2.mTip, Tip._int) || izraz_naredba2.mNiz){
-				Utilities.mWriteToOutputEnabled = false;
-				izraz_naredba2_jeOK = false;
-			}
+			// provjera
+			mIspisivac.PostaviSljedecuLabelu("NP_UVIJET_" + trenLabela);
+			linija = mParser.ParsirajNovuLiniju(); // ucitaj <izraz_naredba>2
+			OBRADI_izraz_naredba(true);
+			
+			mIspisivac.DodajKod("POP R0", "for naredba: skini izraz (uvijet) sa stoga");
+			mStog.remove(mStog.size() - 1);
+			mIspisivac.DodajKod("CMP R0, 0", "for naredba: provjeri ako je izraz jednak 0");
+			mIspisivac.DodajKod("JR_EQ NP_KRAJ_" + trenLabela, "for naredba: ako je onda izadji iz petlje");
+			mIspisivac.DodajKod("JR NP_DALJE_" + trenLabela, "for naredba: ako nije onda preskoci dio koda koraka petlje");
 			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj D_ZAGRADA ili <izraz>
-			UniformniZnak uz_d_zagrada;
-			Boolean imaIzraz;
+			Boolean imaKorak;
 			if (linija.equals("<izraz>")){
-				imaIzraz = true;
-				Izrazi.OBRADI_izraz();
+				imaKorak = true;
+				mIspisivac.PostaviSljedecuLabelu("NP_KORAK_" + trenLabela);
+				Izrazi.OBRADI_izraz(false);
+				mIspisivac.DodajKod("JR NP_UVIJET_" + trenLabela, "for naredba: nakon koraka skoci na uvijet za provjeru");
 				linija = mParser.ParsirajNovuLiniju(); // ucitaj D_ZAGRADA
-				uz_d_zagrada = UniformniZnak.SigurnoStvaranje(linija);
+				
+				mIspisivac.PostaviSljedecuLabelu("NP_DALJE_" + trenLabela);
 				linija = mParser.ParsirajNovuLiniju(); // ucitaj <naredba>
 				OBRADI_naredba();
 			}
 			else{ // it must be D_ZAGRADA
-				imaIzraz = false;
-				uz_d_zagrada = UniformniZnak.SigurnoStvaranje(linija);
+				imaKorak = false;
+				mIspisivac.PostaviSljedecuLabelu("NP_DALJE_" + trenLabela);
 				linija = mParser.ParsirajNovuLiniju(); // ucitaj <naredba>
 				OBRADI_naredba();
 			}
-			
-			if (writeToOutputEnabledWasTrue) Utilities.mWriteToOutputEnabled = true;
-			if (!izraz_naredba2_jeOK){
-				String greska = "<naredba_petlje> ::= " + uz.FormatZaIspis() + " " +
-						uz_l_zagrada.FormatZaIspis() + " <izraz_naredba> <izraz_naredba>";
-				if (imaIzraz) greska += " <izraz>";
-				greska += " " + uz_d_zagrada.FormatZaIspis() + " <naredba>";
-				Utilities.WriteStringLineToOutputAndExit(greska);
+			if (imaKorak){
+				// povratak na korak petlje
+				mIspisivac.DodajKod("JR NP_KORAK_" + trenLabela, "for naredba: povratak na korak petlje");
+			}else{
+				// povratak na uvijet petlje
+				mIspisivac.DodajKod("JR NP_UVIJET_" + trenLabela, "for naredba: povratak na uvijet petlje");
 			}
+			
+			mIspisivac.PostaviSljedecuLabelu("NP_KRAJ_" + trenLabela);
 			return;
 		}
 	}
@@ -208,35 +254,29 @@ public class NaredbenaStrukturaPrograma {
 		if (uz != null && (uz.mNaziv.equals("KR_CONTINUE") || uz.mNaziv.equals("KR_BREAK"))){
 			linija = mParser.ParsirajNovuLiniju();
 			UniformniZnak uz_tockaZarez = UniformniZnak.SigurnoStvaranje(linija);
-			if (!mParser.DohvatiSljedRoditelja().contains("<naredba_petlje>")){
-				String greska = "<naredba_skoka> ::= " + uz.FormatZaIspis() + " " + uz_tockaZarez.FormatZaIspis();
-				Utilities.WriteStringLineToOutputAndExit(greska);
-			}
+			// nije implementirano
 			return;
 		}
 		
 		// return ??
 		if (uz != null && uz.mNaziv.equals("KR_RETURN")){
 			linija = mParser.ParsirajNovuLiniju();
-			UniformniZnak uz_tockaZarez;
 			if (linija.equals("<izraz>")){
-				Tip_LIzraz_Const_Niz izraz = Izrazi.OBRADI_izraz();
+				Izrazi.OBRADI_izraz(true);
 				linija = mParser.ParsirajNovuLiniju(); // TOCKAZAREZ
-				uz_tockaZarez = UniformniZnak.SigurnoStvaranje(linija);
-				TipFunkcija tipFunk = mSTZ.VratiDeklaracijuFunkcijeDjelokruga();
-				if (tipFunk == null || !Utilities.ImplicitnaPretvorbaMoguca(izraz.mTip, tipFunk.mPov) || izraz.mNiz){
-					String greska = "<naredba_skoka> ::= " + uz.FormatZaIspis() + " <izraz> " + uz_tockaZarez.FormatZaIspis();
-					Utilities.WriteStringLineToOutputAndExit(greska);
-				}				
-			}else { // mora biti tockaZarez
-				uz_tockaZarez = UniformniZnak.SigurnoStvaranje(linija);
-				TipFunkcija tipFunk = mSTZ.VratiDeklaracijuFunkcijeDjelokruga();
-				if (tipFunk == null || tipFunk.mPov != Tip._void){
-					String greska = "<naredba_skoka> ::= " + uz.FormatZaIspis() + " " + uz_tockaZarez.FormatZaIspis();
-					Utilities.WriteStringLineToOutputAndExit(greska);
-				}
+				mIspisivac.DodajKod("POP R6", "povratna vrijednost sa stoga");
+				mStog.remove(mStog.size()-1);
+			}// else -> mora biti tockaZarez
+			
+			for (int i = mStog.size(); i > DeklaracijeIDefinicije.mBrojParametaraTrenutacneFunkcije; --i){// ocisti lokalne varijable koje su ostale na stogu
+				//mStog.remove(i - 1); 							// i smece poput spremanja vrijednosti void funkcije
+				mIspisivac.DodajKod("POP R0", "ciscenje stoga prije RET"); // <- ne brisemo
 			}
+			mIspisivac.DodajKod("RET");
+			//mStog.remove(mStog.size()-1); // makni return vrijednost sa stoga // <- ne brisemo
 			return;
+			// Ne micemo sa 'mStog' u komentiranim djelovima jer ovaj RET nece nuzno biti izveden.
+			// 'mStog' se cisti u definiciji funkcije
 		}
 	}
 	
