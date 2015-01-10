@@ -174,9 +174,10 @@ public class DeklaracijeIDefinicije {
 	
 	public static void OBRADI_init_deklarator(){
 		String linija = mParser.ParsirajNovuLiniju(); // ucitaj <izravni_deklarator>
+		int trenLabela = Izrazi.mBrojacLabela++;
 		int stogPrijeIzravnogDek_Lok = (NaredbenaStrukturaPrograma.mStog == null) ? 0 : NaredbenaStrukturaPrograma.mStog.size();
 		int stogPrijeIzravnogDek_Glo = NaredbenaStrukturaPrograma.mGlobalniDjelokrug.size();
-		Ime_Velicina_Adresa izravni_deklarator = OBRADI_izravni_deklarator();
+		Ime_Velicina_Adresa izravni_deklarator = OBRADI_izravni_deklarator(trenLabela);
 		int stogPoslijeIzravnogDek_Lok = (NaredbenaStrukturaPrograma.mStog == null) ? 0 : NaredbenaStrukturaPrograma.mStog.size();
 		int stogPoslijeIzravnogDek_Glo = NaredbenaStrukturaPrograma.mGlobalniDjelokrug.size();
 		int razlikaStoga_Lok = stogPoslijeIzravnogDek_Lok - stogPrijeIzravnogDek_Lok;
@@ -191,7 +192,6 @@ public class DeklaracijeIDefinicije {
 							"deklaracija " + izravni_deklarator.mIme + ": biti ce pridruzivanje pa micem null inicjalizaciju");
 					NaredbenaStrukturaPrograma.mGlobalniDjelokrug.remove(NaredbenaStrukturaPrograma.mGlobalniDjelokrug.size()-1);
 				}
-
 			}else{
 				for (int i = 0; i < razlikaStoga_Lok; ++i){
 					mIspisivac.DodajKod("POP R0",
@@ -202,7 +202,7 @@ public class DeklaracijeIDefinicije {
 			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj OP_PRIDRUZI
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <inicijalizator>
-			OBRADI_inicijalizator();
+			OBRADI_inicijalizator(trenLabela);
 		}
 		
 		if (NaredbenaStrukturaPrograma.mStog == null){
@@ -219,7 +219,7 @@ public class DeklaracijeIDefinicije {
 		return;
 	}
 
-	public static Ime_Velicina_Adresa OBRADI_izravni_deklarator(){
+	public static Ime_Velicina_Adresa OBRADI_izravni_deklarator(int trenutacnaLabela){
 		String linija = mParser.ParsirajNovuLiniju(); // ucitaj IDN
 		UniformniZnak uz_idn = UniformniZnak.SigurnoStvaranje(linija);
 		
@@ -234,10 +234,10 @@ public class DeklaracijeIDefinicije {
 			
 			// neznamo dali ce biti pridruzena vrijednost pri deklaraciji pa inicijaliziramo cijelo polje na nulu
 			if (NaredbenaStrukturaPrograma.mStog == null){ // u globalnom smo djelokrugu
-				for (int i = broj; i > 0; --i){
-					mIspisivac.DodajGlobalnuVarijablu("TEMP_" + Izrazi.mBrojacLabela++, "DW %D 0");
+				for (int i = 0; i < broj; ++i){
+					mIspisivac.DodajGlobalnuVarijablu("TEMP_" + (trenutacnaLabela + i), "DW %D 0");
 				}
-				mIspisivac.DodajPreMainKod("MOVE TEMP_" + (Izrazi.mBrojacLabela - 1) + ", R0", "inicijalizacija polja: spremanje adrese pocetnog clana");
+				mIspisivac.DodajPreMainKod("MOVE TEMP_" + (trenutacnaLabela + broj - 1) + ", R0", "inicijalizacija polja: spremanje adrese pocetnog clana");
 				mIspisivac.DodajPreMainKod("PUSH R0");
 				Ime_Velicina_Adresa vrati = new Ime_Velicina_Adresa();
 				vrati.mIme = uz_idn.mLeksickaJedinka;
@@ -339,7 +339,7 @@ public class DeklaracijeIDefinicije {
 		}
 	}
 	
-	public static void OBRADI_inicijalizator(){
+	public static void OBRADI_inicijalizator(int trenutacnaLabela){
 		String linija = mParser.ParsirajNovuLiniju();
 		
 		if (linija.equals("<izraz_pridruzivanja>")){
@@ -353,11 +353,11 @@ public class DeklaracijeIDefinicije {
 			if (NaredbenaStrukturaPrograma.mStog == null){ // u globalnom smo djelokrugu
 				for (int i = brojClanovaListe; i > 0; --i){
 					mIspisivac.DodajPreMainKod("POP R0", "inicijalizacija polja: dohvacanje clana br " + i);
-					mIspisivac.DodajPreMainKod("STORE R0, (TEMP_" + (Izrazi.mBrojacLabela - i) + ")", "inicijalizacija polja: spremanje clana br " + i);
+					mIspisivac.DodajPreMainKod("STORE R0, (TEMP_" + (trenutacnaLabela + brojClanovaListe - i) + ")", "inicijalizacija polja: spremanje clana br " + i);
 					// mIspisivac.DodajGlobalnuVarijablu("TEMP_" + Izrazi.mBrojacLabela++, "DW %D 0"); // vec dodano u izravnom deklaratoru
 					NaredbenaStrukturaPrograma.mGlobalniDjelokrug.remove(NaredbenaStrukturaPrograma.mGlobalniDjelokrug.size()-1);
 				}
-				mIspisivac.DodajPreMainKod("MOVE TEMP_" + (Izrazi.mBrojacLabela - 1) + ", R0", "inicijalizacija polja: spremanje adrese pocetnog clana");
+				mIspisivac.DodajPreMainKod("MOVE TEMP_" + (trenutacnaLabela + brojClanovaListe - 1) + ", R0", "inicijalizacija polja: spremanje adrese pocetnog clana");
 				mIspisivac.DodajPreMainKod("PUSH R0");
 				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
 				novi.mIme = null;
