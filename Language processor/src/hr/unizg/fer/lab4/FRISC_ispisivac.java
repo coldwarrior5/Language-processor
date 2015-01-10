@@ -88,8 +88,8 @@ public class FRISC_ispisivac {
 		if (mDodajFunkcijuMod){
 			DodajKod(null); // radi urednosti
 			PostaviSljedecuLabelu("LF_MOD");
-			DodajKod("LOAD R1, (R7 + 4)", "dohvacam y");
-			DodajKod("LOAD R0, (R7 + 8)", "dohvacam x");
+			DodajKod("LOAD R1, (R7+4)", "dohvacam y");
+			DodajKod("LOAD R0, (R7+8)", "dohvacam x");
 			PostaviSljedecuLabelu("LF_MOD_UVIJET");
 			DodajKod("CMP R0, R1");
 			DodajKod("JR_SLT LF_MOD_KRAJ");
