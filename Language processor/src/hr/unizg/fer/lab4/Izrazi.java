@@ -32,7 +32,7 @@ public class Izrazi {
 						mIspisivac.DodajKod("ADD R0, 4, R0", "(korak 3) dohvacam adresu: " + uz.mLeksickaJedinka);
 						mIspisivac.DodajKod("ADD R0, " + dubina + ", R0", "(korak 4) dohvacam adresu: " + uz.mLeksickaJedinka);
 					}
-					else mIspisivac.DodajKod("LOAD R0, (R7 + " + dubina + ")", "dohvacam " + uz.mLeksickaJedinka);
+					else mIspisivac.DodajKod("LOAD R0, (R7+" + dubina + ")", "dohvacam " + uz.mLeksickaJedinka);
 					mIspisivac.DodajKod("PUSH R0");
 					Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
 					novi.mIme = null;
@@ -293,12 +293,22 @@ public class Izrazi {
 			UniformniZnak znakOp = UniformniZnak.SigurnoStvaranje(linija);
 			linija = mParser.ParsirajNovuLiniju();	// ucitaj <cast_izraz>
 			OBRADI_cast_izraz(staviNaStog);
-			if (znakOp.mNaziv.equals("MINUS")){
-				mIspisivac.DodajKod("POP R0");
-				mIspisivac.DodajKod("XOR R0, -1, R0");
-				mIspisivac.DodajKod("ADD R0, 1, R0");
-				mIspisivac.DodajKod("PUSH R0");
-				return;
+			if (NaredbenaStrukturaPrograma.mStog != null){ // u globalnom djelokrugu
+				if (znakOp.mNaziv.equals("MINUS")){
+					mIspisivac.DodajKod("POP R0", "unarni operator MINUS: komplementiraj vrijednost");
+					mIspisivac.DodajKod("XOR R0, -1, R0");
+					mIspisivac.DodajKod("ADD R0, 1, R0");
+					mIspisivac.DodajKod("PUSH R0", "unarni operator MINUS: spremi novu vrijednost");
+					return;
+				}
+			}else{ // u lokalnom djelokrugu
+				if (znakOp.mNaziv.equals("MINUS")){
+					mIspisivac.DodajPreMainKod("POP R0", "unarni operator MINUS: komplementiraj vrijednost");
+					mIspisivac.DodajPreMainKod("XOR R0, -1, R0");
+					mIspisivac.DodajPreMainKod("ADD R0, 1, R0");
+					mIspisivac.DodajPreMainKod("PUSH R0", "unarni operator MINUS: spremi novu vrijednost");
+					return;
+				}
 			}
 		}
 	}
