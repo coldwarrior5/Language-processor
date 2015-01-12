@@ -1,14 +1,12 @@
 package hr.unizg.fer.labComplete;
 
-import hr.unizg.fer.lab1.NFA;
-
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 class LexicalRule{
 	int mLexicalState;
-	NFA mENFA;
+	NFA_LA mENFA;
 	Boolean mDiscardString;
 	String mLexicalTokenName;
 	Boolean mNewLine;
@@ -63,7 +61,7 @@ public class LA{
 		LexicalRule temp;
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("\\t|\\_");
+		temp.mENFA = new NFA_LA("\\t|\\_");
 		temp.mDiscardString = true;
 		temp.mLexicalTokenName = "null";
 		temp.mNewLine = false;
@@ -74,7 +72,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("\\n");
+		temp.mENFA = new NFA_LA("\\n");
 		temp.mDiscardString = true;
 		temp.mLexicalTokenName = "null";
 		temp.mNewLine = true;
@@ -85,7 +83,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("//");
+		temp.mENFA = new NFA_LA("//");
 		temp.mDiscardString = true;
 		temp.mLexicalTokenName = "null";
 		temp.mNewLine = false;
@@ -96,7 +94,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 2;
-		temp.mENFA = new NFA("\\n");
+		temp.mENFA = new NFA_LA("\\n");
 		temp.mDiscardString = true;
 		temp.mLexicalTokenName = "null";
 		temp.mNewLine = true;
@@ -107,7 +105,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 2;
-		temp.mENFA = new NFA("(\\(|\\)|\\{|\\}|\\||\\*|\\\\|\\$|\\t|\\n|\\_|!|\"|#|%|&|'|+|,|-|.|/|0|1|2|3|4|5|6|7|8|9|:|;|<|=|>|?|@|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|[|]|^|_|`|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|~)");
+		temp.mENFA = new NFA_LA("(\\(|\\)|\\{|\\}|\\||\\*|\\\\|\\$|\\t|\\n|\\_|!|\"|#|%|&|'|+|,|-|.|/|0|1|2|3|4|5|6|7|8|9|:|;|<|=|>|?|@|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|[|]|^|_|`|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|~)");
 		temp.mDiscardString = true;
 		temp.mLexicalTokenName = "null";
 		temp.mNewLine = false;
@@ -118,7 +116,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("/\\*");
+		temp.mENFA = new NFA_LA("/\\*");
 		temp.mDiscardString = true;
 		temp.mLexicalTokenName = "null";
 		temp.mNewLine = false;
@@ -129,7 +127,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 1;
-		temp.mENFA = new NFA("\\*/");
+		temp.mENFA = new NFA_LA("\\*/");
 		temp.mDiscardString = true;
 		temp.mLexicalTokenName = "null";
 		temp.mNewLine = false;
@@ -140,7 +138,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 1;
-		temp.mENFA = new NFA("\\n");
+		temp.mENFA = new NFA_LA("\\n");
 		temp.mDiscardString = true;
 		temp.mLexicalTokenName = "null";
 		temp.mNewLine = true;
@@ -151,7 +149,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 1;
-		temp.mENFA = new NFA("(\\(|\\)|\\{|\\}|\\||\\*|\\\\|\\$|\\t|\\n|\\_|!|\"|#|%|&|'|+|,|-|.|/|0|1|2|3|4|5|6|7|8|9|:|;|<|=|>|?|@|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|[|]|^|_|`|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|~)");
+		temp.mENFA = new NFA_LA("(\\(|\\)|\\{|\\}|\\||\\*|\\\\|\\$|\\t|\\n|\\_|!|\"|#|%|&|'|+|,|-|.|/|0|1|2|3|4|5|6|7|8|9|:|;|<|=|>|?|@|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|[|]|^|_|`|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|~)");
 		temp.mDiscardString = true;
 		temp.mLexicalTokenName = "null";
 		temp.mNewLine = false;
@@ -162,7 +160,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("\"");
+		temp.mENFA = new NFA_LA("\"");
 		temp.mDiscardString = true;
 		temp.mLexicalTokenName = "null";
 		temp.mNewLine = false;
@@ -173,7 +171,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 3;
-		temp.mENFA = new NFA("\"((\\(|\\)|\\{|\\}|\\||\\*|\\\\|\\$|\\t|\\_|!|#|%|&|'|+|,|-|.|/|0|1|2|3|4|5|6|7|8|9|:|;|<|=|>|?|@|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|[|]|^|_|`|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|~)|\\\\\")*\"");
+		temp.mENFA = new NFA_LA("\"((\\(|\\)|\\{|\\}|\\||\\*|\\\\|\\$|\\t|\\_|!|#|%|&|'|+|,|-|.|/|0|1|2|3|4|5|6|7|8|9|:|;|<|=|>|?|@|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|[|]|^|_|`|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|~)|\\\\\")*\"");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "NIZ_ZNAKOVA";
 		temp.mNewLine = false;
@@ -184,7 +182,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("break");
+		temp.mENFA = new NFA_LA("break");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "KR_BREAK";
 		temp.mNewLine = false;
@@ -195,7 +193,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("char");
+		temp.mENFA = new NFA_LA("char");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "KR_CHAR";
 		temp.mNewLine = false;
@@ -206,7 +204,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("const");
+		temp.mENFA = new NFA_LA("const");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "KR_CONST";
 		temp.mNewLine = false;
@@ -217,7 +215,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("continue");
+		temp.mENFA = new NFA_LA("continue");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "KR_CONTINUE";
 		temp.mNewLine = false;
@@ -228,7 +226,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("else");
+		temp.mENFA = new NFA_LA("else");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "KR_ELSE";
 		temp.mNewLine = false;
@@ -239,7 +237,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("for");
+		temp.mENFA = new NFA_LA("for");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "KR_FOR";
 		temp.mNewLine = false;
@@ -250,7 +248,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("if");
+		temp.mENFA = new NFA_LA("if");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "KR_IF";
 		temp.mNewLine = false;
@@ -261,7 +259,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("int");
+		temp.mENFA = new NFA_LA("int");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "KR_INT";
 		temp.mNewLine = false;
@@ -272,7 +270,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("return");
+		temp.mENFA = new NFA_LA("return");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "KR_RETURN";
 		temp.mNewLine = false;
@@ -283,7 +281,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("void");
+		temp.mENFA = new NFA_LA("void");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "KR_VOID";
 		temp.mNewLine = false;
@@ -294,7 +292,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("while");
+		temp.mENFA = new NFA_LA("while");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "KR_WHILE";
 		temp.mNewLine = false;
@@ -305,7 +303,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("(_|(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z))(_|(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z)|(0|1|2|3|4|5|6|7|8|9))*");
+		temp.mENFA = new NFA_LA("(_|(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z))(_|(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z)|(0|1|2|3|4|5|6|7|8|9))*");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "IDN";
 		temp.mNewLine = false;
@@ -316,7 +314,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("(0|1|2|3|4|5|6|7|8|9)(0|1|2|3|4|5|6|7|8|9)*");
+		temp.mENFA = new NFA_LA("(0|1|2|3|4|5|6|7|8|9)(0|1|2|3|4|5|6|7|8|9)*");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "BROJ";
 		temp.mNewLine = false;
@@ -327,7 +325,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("0(X|x)((0|1|2|3|4|5|6|7|8|9)|a|b|c|d|e|f|A|B|C|D|E|F)((0|1|2|3|4|5|6|7|8|9)|a|b|c|d|e|f|A|B|C|D|E|F)*");
+		temp.mENFA = new NFA_LA("0(X|x)((0|1|2|3|4|5|6|7|8|9)|a|b|c|d|e|f|A|B|C|D|E|F)((0|1|2|3|4|5|6|7|8|9)|a|b|c|d|e|f|A|B|C|D|E|F)*");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "BROJ";
 		temp.mNewLine = false;
@@ -338,7 +336,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("'(\\(|\\)|\\{|\\}|\\||\\*|\\\\|\\$|\\_|!|\"|#|%|&|+|,|-|.|/|0|1|2|3|4|5|6|7|8|9|:|;|<|=|>|?|@|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|[|]|^|_|`|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|~)'");
+		temp.mENFA = new NFA_LA("'(\\(|\\)|\\{|\\}|\\||\\*|\\\\|\\$|\\_|!|\"|#|%|&|+|,|-|.|/|0|1|2|3|4|5|6|7|8|9|:|;|<|=|>|?|@|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|[|]|^|_|`|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|~)'");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "ZNAK";
 		temp.mNewLine = false;
@@ -349,7 +347,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("'\\\\(\\(|\\)|\\{|\\}|\\||\\*|\\\\|\\$|\\_|!|\"|#|%|&|'|+|,|-|.|/|0|1|2|3|4|5|6|7|8|9|:|;|<|=|>|?|@|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|[|]|^|_|`|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|~)'");
+		temp.mENFA = new NFA_LA("'\\\\(\\(|\\)|\\{|\\}|\\||\\*|\\\\|\\$|\\_|!|\"|#|%|&|'|+|,|-|.|/|0|1|2|3|4|5|6|7|8|9|:|;|<|=|>|?|@|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|[|]|^|_|`|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|~)'");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "ZNAK";
 		temp.mNewLine = false;
@@ -360,7 +358,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("++");
+		temp.mENFA = new NFA_LA("++");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_INC";
 		temp.mNewLine = false;
@@ -371,7 +369,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("--");
+		temp.mENFA = new NFA_LA("--");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_DEC";
 		temp.mNewLine = false;
@@ -382,7 +380,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("+");
+		temp.mENFA = new NFA_LA("+");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "PLUS";
 		temp.mNewLine = false;
@@ -393,7 +391,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("-");
+		temp.mENFA = new NFA_LA("-");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "MINUS";
 		temp.mNewLine = false;
@@ -404,7 +402,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("\\*");
+		temp.mENFA = new NFA_LA("\\*");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_PUTA";
 		temp.mNewLine = false;
@@ -415,7 +413,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("/");
+		temp.mENFA = new NFA_LA("/");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_DIJELI";
 		temp.mNewLine = false;
@@ -426,7 +424,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("%");
+		temp.mENFA = new NFA_LA("%");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_MOD";
 		temp.mNewLine = false;
@@ -437,7 +435,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("=");
+		temp.mENFA = new NFA_LA("=");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_PRIDRUZI";
 		temp.mNewLine = false;
@@ -448,7 +446,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("<");
+		temp.mENFA = new NFA_LA("<");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_LT";
 		temp.mNewLine = false;
@@ -459,7 +457,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("<=");
+		temp.mENFA = new NFA_LA("<=");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_LTE";
 		temp.mNewLine = false;
@@ -470,7 +468,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA(">");
+		temp.mENFA = new NFA_LA(">");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_GT";
 		temp.mNewLine = false;
@@ -481,7 +479,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA(">=");
+		temp.mENFA = new NFA_LA(">=");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_GTE";
 		temp.mNewLine = false;
@@ -492,7 +490,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("==");
+		temp.mENFA = new NFA_LA("==");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_EQ";
 		temp.mNewLine = false;
@@ -503,7 +501,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("!=");
+		temp.mENFA = new NFA_LA("!=");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_NEQ";
 		temp.mNewLine = false;
@@ -514,7 +512,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("!");
+		temp.mENFA = new NFA_LA("!");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_NEG";
 		temp.mNewLine = false;
@@ -525,7 +523,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("~");
+		temp.mENFA = new NFA_LA("~");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_TILDA";
 		temp.mNewLine = false;
@@ -536,7 +534,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("&&");
+		temp.mENFA = new NFA_LA("&&");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_I";
 		temp.mNewLine = false;
@@ -547,7 +545,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("\\|\\|");
+		temp.mENFA = new NFA_LA("\\|\\|");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_ILI";
 		temp.mNewLine = false;
@@ -558,7 +556,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("&");
+		temp.mENFA = new NFA_LA("&");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_BIN_I";
 		temp.mNewLine = false;
@@ -569,7 +567,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("\\|");
+		temp.mENFA = new NFA_LA("\\|");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_BIN_ILI";
 		temp.mNewLine = false;
@@ -580,7 +578,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("^");
+		temp.mENFA = new NFA_LA("^");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "OP_BIN_XILI";
 		temp.mNewLine = false;
@@ -591,7 +589,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA(",");
+		temp.mENFA = new NFA_LA(",");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "ZAREZ";
 		temp.mNewLine = false;
@@ -602,7 +600,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA(";");
+		temp.mENFA = new NFA_LA(";");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "TOCKAZAREZ";
 		temp.mNewLine = false;
@@ -613,7 +611,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("\\(");
+		temp.mENFA = new NFA_LA("\\(");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "L_ZAGRADA";
 		temp.mNewLine = false;
@@ -624,7 +622,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("\\)");
+		temp.mENFA = new NFA_LA("\\)");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "D_ZAGRADA";
 		temp.mNewLine = false;
@@ -635,7 +633,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("\\{");
+		temp.mENFA = new NFA_LA("\\{");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "L_VIT_ZAGRADA";
 		temp.mNewLine = false;
@@ -646,7 +644,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("\\}");
+		temp.mENFA = new NFA_LA("\\}");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "D_VIT_ZAGRADA";
 		temp.mNewLine = false;
@@ -657,7 +655,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("[");
+		temp.mENFA = new NFA_LA("[");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "L_UGL_ZAGRADA";
 		temp.mNewLine = false;
@@ -668,7 +666,7 @@ public class LA{
 		mLexRules.add(temp);
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
-		temp.mENFA = new NFA("]");
+		temp.mENFA = new NFA_LA("]");
 		temp.mDiscardString = false;
 		temp.mLexicalTokenName = "D_UGL_ZAGRADA";
 		temp.mNewLine = false;

@@ -1,7 +1,5 @@
 package hr.unizg.fer.labComplete;
 
-import java.util.List;
-
 public class CompilerPPJ {
 
 	public static void main(String[] args) {
