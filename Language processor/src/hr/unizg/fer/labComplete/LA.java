@@ -1,7 +1,28 @@
-package hr.unizg.fer.lab1;
+package hr.unizg.fer.labComplete;
+
+import hr.unizg.fer.lab1.NFA;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Scanner;
+
+class LexicalRule{
+	int mLexicalState;
+	NFA mENFA;
+	Boolean mDiscardString;
+	String mLexicalTokenName;
+	Boolean mNewLine;
+	Boolean mGoToState;
+	int mGoToStateId;
+	Boolean mReturn;
+	int mReturnAt;
+}
+
+class LA_OutputElement{
+	String mUniformToken;
+	int mLine;
+	String mLexicUint;
+}
 
 public class LA{
 
@@ -13,8 +34,32 @@ public class LA{
 	private static int mReaderPos;
 	private static List<LexicalRule> mLexRules = new ArrayList<LexicalRule>();
 	private static List<LA_OutputElement> mOutput = new ArrayList<LA_OutputElement>();
+	
+	private String ReadStringFromInput(){
+	String input = "";
+	Scanner scIn = new Scanner(System.in);
+	while(true){
+		
+		//if(scIn.hasNext()==false){		//This works in terminal
+		//	break;						//It expects the stdin to close
+		//}
+		
+		String read = scIn.nextLine();	//Everything else looks normal
+		
+		if(read.equals("")){			//This works in Eclipse
+			break;						//It expects for user to type another enter
+		}
 
-	private static void Initialize(){
+
+		
+		input += read + "\n";
+		
+	}
+	scIn.close();
+	return input;
+}
+	
+	private void Initialize(){
 		LexicalRule temp;
 		temp = new LexicalRule();
 		temp.mLexicalState = 0;
@@ -634,7 +679,7 @@ public class LA{
 		mLexRules.add(temp);
 	}
 
-	private static void ApplyRule(int ruleIndex){
+	private void ApplyRule(int ruleIndex){
 		LA_OutputElement temp = new LA_OutputElement();
 		temp.mLine = mCurrentLine;
 		temp.mUniformToken = mLexRules.get(ruleIndex).mLexicalTokenName;
@@ -651,14 +696,14 @@ public class LA{
 		if (!mLexRules.get(ruleIndex).mDiscardString) mOutput.add(temp);
 	}
 
-	public static void main(String[] args){
+	public String GetOutput(){
 		mCurrentState = mInitialState;
 		mLastProcessedPos = -1;
 		mCurrentLine = 1; // We start with first line of code.
 		Initialize();
 
 		// Now the input and analysis.
-		mInput = UtilitiesLA.ReadStringFromInput();
+		mInput = ReadStringFromInput();
 		while(mLastProcessedPos < mInput.length() - 1){
 			mReaderPos = mLastProcessedPos + 1;
 			for(int i = 0; i < mLexRules.size(); ++i) mLexRules.get(i).mENFA.Reset_eNFA(); // Resets the eNFAs for new lexic unit analysis.
@@ -688,12 +733,20 @@ public class LA{
 			}while(tempReaderPos < mInput.length());
 
 			if (bestRuleToApplySoFar != Integer.MAX_VALUE)ApplyRule(bestRuleToApplySoFar);
-			else mLastProcessedPos += 1; // error recovery
+			else {
+				mLastProcessedPos += 1; // error recovery
+				System.err.println("Leksicka pogreska na liniji: " + mCurrentLine);
+			}
 		}
 
-		// We are done, just write that...
-		for (int i = 0; i < mOutput.size(); ++i) 
-			System.out.println(mOutput.get(i).mUniformToken + " " + mOutput.get(i).mLine + " " + mOutput.get(i).mLexicUint);
-
+		// We are done, just output that...
+		String outString = "";
+		for (int i = 0; i < mOutput.size(); ++i) {
+			String str = mOutput.get(i).mUniformToken + " " + mOutput.get(i).mLine + " " + mOutput.get(i).mLexicUint;
+			//System.out.println(str);
+			outString += str + "\n";
+		}
+		
+		return outString;
 	}
 }

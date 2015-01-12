@@ -133,9 +133,7 @@ public class GLA {
 		scb.AddInMain("	System.out.println(mOutput.get(i).mUniformToken + \" \" + mOutput.get(i).mLine + \" \" + mOutput.get(i).mLexicUint);");
 		
 		// writes the generated program to a file.
-		scb.Write("src/hr/unizg/fer/");		//works for terminal
-		/*log.Write("src/hr/unizg/fer/");			//works for Eclipse
-		 * 
-		 */
+		//scb.Write("src/hr/unizg/fer/");		//works for terminal
+		scb.Write("src/hr/unizg/fer/lab1/");			//works for Eclipse
 	}
 }

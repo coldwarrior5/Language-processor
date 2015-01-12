@@ -21,7 +21,7 @@ class Item{
 	List<Integer> mRightSymbolsIndices = new ArrayList<Integer>();
 	// tells what terminal characters can appear on the right side
 	List<Integer> mBEGINS_Set = new ArrayList<Integer>();
-	// Index in Parser.mProductions of this item
+	// Index in Parser_Sem.mProductions of this item
 	int mProductionIndex;
 }
 
