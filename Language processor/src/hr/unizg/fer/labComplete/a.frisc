@@ -1,79 +1,92 @@
 	`BASE D	;postavi bazu 10
 	MOVE 40000, R7
-	MOVE F_GCD, R0	;definicija funkcije gcd
-	STORE R0, (G_GCD)
+	MOVE %D 0, R0	;izravni deklarator cijelobrojne varijable: postavi na nulu
+	PUSH R0
+	POP R0	;deklaracija deesi: biti ce pridruzivanje pa micem null inicjalizaciju
+	MOVE %D 48, R0
+	PUSH R0
+	POP R0	;deklaracija deesi: dohvacanje vrijednosti
+	STORE R0, (G_DEESI)	;deklaracija deesi: spremanje na odrediste
 	MOVE F_MAIN, R0	;definicija funkcije main
 	STORE R0, (G_MAIN)
 	CALL F_MAIN
 	HALT
 
-F_GCD	LOAD R0, (R7+8)	;dohvacam m
+F_MAIN	MOVE %D 0, R0	;izravni deklarator cijelobrojne varijable: postavi na nulu
 	PUSH R0
-	MOVE %D 0, R0
+	POP R0	;deklaracija a: biti ce pridruzivanje pa micem null inicjalizaciju
+	MOVE %D 27, R0
+	PUSH R0
+	MOVE %D 3, R0
+	PUSH R0
+	CALL LF_DIV	;multiplikativni izraz (DIV):operandi su vec na stogu
+	POP R0	;multiplikativni izraz: skidanje operanada
+	POP R0	;multiplikativni izraz: skidanje operanada
+	PUSH R6	;multiplikativni izraz: potrebno je rezultat staviti na stog
+	LOAD R0, (R7+0)	;dohvacam a
+	PUSH R0
+	MOVE %D 9, R0
 	PUSH R0
 	POP R1	;operator jednakosnog izraza ==: pocetak
 	POP R0
 	CMP R0, R1	;usporedba
-	JR_EQ JI_ISTINA_2	;skoci na JI_ISTINA_ ako je R0 manji
+	JR_EQ JI_ISTINA_24	;skoci na JI_ISTINA_ ako je R0 manji
 	MOVE %D 0, R0	;izraz nije istinit
-	JR JI_DALJE_2	;preskoci postavljanje R0 u 1
-JI_ISTINA_2	MOVE %D 1, R0	;izraz je istinit
-JI_DALJE_2	PUSH R0	;postavi rezultat na stog
+	JR JI_DALJE_24	;preskoci postavljanje R0 u 1
+JI_ISTINA_24	MOVE %D 1, R0	;izraz je istinit
+JI_DALJE_24	PUSH R0	;postavi rezultat na stog
+	POP R0	;unarni operator OP_NEG: dohvati vrijednost
+	CMP R0, 0
+	JR_NE 12	;preskoci postavljanje vrijednosti na jedan
+	MOVE %D 1, R0
+	JR 8	;preskoci postavljanje vrijednosti na nulu
+	MOVE %D 0, R0
+	PUSH R0	;unarni operator OP_NEG: spremi novu vrijednost
 	POP R0	;if naredba: skini izraz sa stoga
 	CMP R0, 0	;if naredba: provjeri ako je izraz jednak 0
 	JR_EQ NG_DALJE_1_0	;if naredba: ako je onda preskoci dio koda
-	LOAD R0, (R7+4)	;dohvacam n
+	LOAD R0, (G_DEESI)	;dohvacam deesi
 	PUSH R0
 	POP R6	;povratna vrijednost sa stoga
+	POP R0	;ciscenje stoga prije RET
 	RET
 	JR NG_DALJE_2_0	;if naredba: preskoci ELSE dio koda
-NG_DALJE_1_0	MOVE G_GCD, R0	;dohvacam adresu gcd
+NG_DALJE_1_0	LOAD R0, (G_DEESI)	;dohvacam deesi
 	PUSH R0
-	POP R0	;dohvati adresu adrese funkcije
-	LOAD R5, (R0)	;dohvati adresu funkcije
-	LOAD R0, (R7+4)	;dohvacam n
+	MOVE %D 10, R0
 	PUSH R0
-	LOAD R0, (R7+12)	;dohvacam m
-	PUSH R0
-	CALL LF_MOD	;multiplikativni izraz (MOD):operandi su vec na stogu
+	CALL LF_MUL	;multiplikativni izraz (MUL):operandi su vec na stogu
 	POP R0	;multiplikativni izraz: skidanje operanada
 	POP R0	;multiplikativni izraz: skidanje operanada
 	PUSH R6	;multiplikativni izraz: potrebno je rezultat staviti na stog
-	LOAD R0, (R7+12)	;dohvacam m
-	PUSH R0
-	CALL (R5)
-	POP R0
-	POP R0
-	PUSH R6
 	POP R6	;povratna vrijednost sa stoga
+	POP R0	;ciscenje stoga prije RET
 	RET
-NG_DALJE_2_0	RET	;dodaj RET u slucaju da nije bio eksplicitno pozvan
-
-F_MAIN	MOVE G_GCD, R0	;dohvacam adresu gcd
-	PUSH R0
-	POP R0	;dohvati adresu adrese funkcije
-	LOAD R5, (R0)	;dohvati adresu funkcije
-	MOVE %D 20, R0
-	PUSH R0
-	MOVE %D 6, R0
-	PUSH R0
-	CALL (R5)
-	POP R0
-	POP R0
-	PUSH R6
-	POP R6	;povratna vrijednost sa stoga
-	RET
+NG_DALJE_2_0	POP R0	;ciscenje dijela stoga prije kraja djelokruga
 	RET	;dodaj RET u slucaju da nije bio eksplicitno pozvan
 
-LF_MOD	LOAD R1, (R7+4)	;dohvacam y
+LF_DIV	LOAD R1, (R7+4)	;dohvacam y
 	LOAD R0, (R7+8)	;dohvacam x
-LF_MOD_UVIJET	CMP R0, R1
-	JR_SLT LF_MOD_KRAJ
+	MOVE %D 0, R2	;brojilo oduzimanja
+LF_DIV_UVIJET	CMP R0, R1
+	JR_SLT LF_DIV_KRAJ
 	SUB R0, R1, R0
-	JR LF_MOD_UVIJET
-LF_MOD_KRAJ	ADD R0, 0, R6
-	RET	;vrati x%y
+	ADD R2, 1, R2	;uvecaj vrijednost brojila
+	JR LF_DIV_UVIJET
+LF_DIV_KRAJ	ADD R2, 0, R6
+	RET	;vrati x/y
 
-G_GCD	DW %D 0
+LF_MUL	LOAD R1, (R7+4)	;dohvacam y
+	LOAD R0, (R7+8)	;dohvacam x
+	MOVE %D 0, R2
+LF_MUL_UVIJET	CMP R0, 0
+	JR_EQ LF_MUL_KRAJ
+	SUB R0, 1, R0
+	ADD R2, R1, R2
+	JR LF_MUL_UVIJET
+LF_MUL_KRAJ	ADD R2, 0, R6
+	RET	;vrati x*y
+
+G_DEESI	DW %D 0
 G_MAIN	DW %D 0
 

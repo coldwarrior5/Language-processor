@@ -1,4 +1,6 @@
 package hr.unizg.fer.lab4;
+
+import java.util.List;
 	
 public class Izrazi {
 	
@@ -6,7 +8,12 @@ public class Izrazi {
 	public static FRISC_ispisivac mIspisivac;
 	public static int mBrojacLabela = 0;
 	
+	// ovo je zapravo vrsta izvedenih svojstava
+	public static Boolean mZadnjiPrimarniIzrazJe_NIZ_ZNAKOVA = false;
+	public static int mDuljina_NIZ_ZNAKOVA;
+	
 	public static void OBRADI_primarni_izraz(boolean dajAdresu){
+		mZadnjiPrimarniIzrazJe_NIZ_ZNAKOVA = false;
 		String linija = mParser.ParsirajNovuLiniju();
 		UniformniZnak uz = new UniformniZnak(linija);
 		int trenLabela = mBrojacLabela++;
@@ -118,8 +125,31 @@ public class Izrazi {
 		}
 		
 		if (uz.mNaziv.equals("NIZ_ZNAKOVA")){
+			mZadnjiPrimarniIzrazJe_NIZ_ZNAKOVA = true;
+			List<Character> niz = Utilities.VratiZnakoveIz_NIZ_ZNAKOVA(uz.mLeksickaJedinka);
+			mDuljina_NIZ_ZNAKOVA = niz.size();
 			
-			// nije implementirano
+			if (NaredbenaStrukturaPrograma.mStog != null){ // jesmo li u globalnom djelokrugu ili u funkciji
+				for (int i = 0; i < niz.size(); ++i){
+					mIspisivac.DodajKod("MOVE %D " + (int)niz.get(i) + ", R0", "inicijalizacija znakovnog niza");
+					mIspisivac.DodajKod("PUSH R0", "inicijalizacija znakovnog niza");
+					Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+					novi.mIme = null;
+					novi.mAdresa = false;
+					novi.mVelicina = 4;
+					NaredbenaStrukturaPrograma.mStog.add(novi);
+				}
+			}else{
+				for (int i = 0; i < niz.size(); ++i){
+					mIspisivac.DodajPreMainKod("MOVE %D " + (int)niz.get(i) + ", R0", "inicijalizacija znakovnog niza");
+					mIspisivac.DodajPreMainKod("PUSH R0", "inicijalizacija znakovnog niza");
+					Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
+					novi.mIme = null;
+					novi.mAdresa = false;
+					novi.mVelicina = 4;
+					NaredbenaStrukturaPrograma.mGlobalniDjelokrug.add(novi);
+				}
+			}
 			return;
 		}
 		
@@ -293,20 +323,54 @@ public class Izrazi {
 			UniformniZnak znakOp = UniformniZnak.SigurnoStvaranje(linija);
 			linija = mParser.ParsirajNovuLiniju();	// ucitaj <cast_izraz>
 			OBRADI_cast_izraz(staviNaStog);
-			if (NaredbenaStrukturaPrograma.mStog != null){ // u globalnom djelokrugu
-				if (znakOp.mNaziv.equals("MINUS")){
-					mIspisivac.DodajKod("POP R0", "unarni operator MINUS: komplementiraj vrijednost");
+			
+			if (znakOp.mNaziv.equals("PLUS")){
+				// netreba nista napravit ;)
+				return;
+			}else if (znakOp.mNaziv.equals("MINUS")){
+				if (NaredbenaStrukturaPrograma.mStog != null){ // u lokalnom djelokrugu
+					mIspisivac.DodajKod("POP R0", "unarni operator MINUS: dohvati vrijednost");
 					mIspisivac.DodajKod("XOR R0, -1, R0");
 					mIspisivac.DodajKod("ADD R0, 1, R0");
 					mIspisivac.DodajKod("PUSH R0", "unarni operator MINUS: spremi novu vrijednost");
 					return;
-				}
-			}else{ // u lokalnom djelokrugu
-				if (znakOp.mNaziv.equals("MINUS")){
-					mIspisivac.DodajPreMainKod("POP R0", "unarni operator MINUS: komplementiraj vrijednost");
+				}else{ // u globalnom djelokrugu
+					mIspisivac.DodajPreMainKod("POP R0", "unarni operator MINUS: dohvati vrijednost");
 					mIspisivac.DodajPreMainKod("XOR R0, -1, R0");
 					mIspisivac.DodajPreMainKod("ADD R0, 1, R0");
 					mIspisivac.DodajPreMainKod("PUSH R0", "unarni operator MINUS: spremi novu vrijednost");
+					return;
+				}
+			}else if (znakOp.mNaziv.equals("OP_TILDA")){
+				if (NaredbenaStrukturaPrograma.mStog != null){ // u lokalnom djelokrugu
+					mIspisivac.DodajKod("POP R0", "unarni operator OP_TILDA: dohvati vrijednost");
+					mIspisivac.DodajKod("XOR R0, -1, R0");
+					mIspisivac.DodajKod("PUSH R0", "unarni operator OP_TILDA: spremi novu vrijednost");
+					return;
+				}else{ // u globalnom djelokrugu
+					mIspisivac.DodajPreMainKod("POP R0", "unarni operator OP_TILDA: dohvati vrijednost");
+					mIspisivac.DodajPreMainKod("XOR R0, -1, R0");
+					mIspisivac.DodajPreMainKod("PUSH R0", "unarni operator OP_TILDA: spremi novu vrijednost");
+					return;
+				}
+			}else if (znakOp.mNaziv.equals("OP_NEG")){
+				if (NaredbenaStrukturaPrograma.mStog != null){ // u lokalnom djelokrugu
+					mIspisivac.DodajKod("POP R0", "unarni operator OP_NEG: dohvati vrijednost");
+					mIspisivac.DodajKod("CMP R0, 0");
+					mIspisivac.DodajKod("JR_NE 12", "preskoci postavljanje vrijednosti na jedan");
+					mIspisivac.DodajKod("MOVE %D 1, R0");
+					mIspisivac.DodajKod("JR 8", "preskoci postavljanje vrijednosti na nulu");
+					mIspisivac.DodajKod("MOVE %D 0, R0");
+					mIspisivac.DodajKod("PUSH R0", "unarni operator OP_NEG: spremi novu vrijednost");
+					return;
+				}else{ // u globalnom djelokrugu
+					mIspisivac.DodajPreMainKod("POP R0", "unarni operator OP_NEG: dohvati vrijednost");
+					mIspisivac.DodajPreMainKod("CMP R0, 0");
+					mIspisivac.DodajPreMainKod("JR_NE 12", "preskoci postavljanje vrijednosti na jedan");
+					mIspisivac.DodajPreMainKod("MOVE %D 1, R0");
+					mIspisivac.DodajPreMainKod("JR 8", "preskoci postavljanje vrijednosti na nulu");
+					mIspisivac.DodajPreMainKod("MOVE %D 0, R0");
+					mIspisivac.DodajPreMainKod("PUSH R0", "unarni operator OP_NEG: spremi novu vrijednost");
 					return;
 				}
 			}
@@ -388,9 +452,12 @@ public class Izrazi {
 			if (uz_operator.mNaziv.equals("OP_MOD")){
 				mIspisivac.mDodajFunkcijuMod = true;
 				mIspisivac.DodajKod("CALL LF_MOD", "multiplikativni izraz (MOD):operandi su vec na stogu");
-			}
-			else{
-				// nije jos implementirano
+			}else if (uz_operator.mNaziv.equals("OP_DIJELI")){
+				mIspisivac.mDodajFunkcijuDiv = true;
+				mIspisivac.DodajKod("CALL LF_DIV", "multiplikativni izraz (DIV):operandi su vec na stogu");
+			}else{ // mora biti OP_PUTA
+				mIspisivac.mDodajFunkcijuMul = true;
+				mIspisivac.DodajKod("CALL LF_MUL", "multiplikativni izraz (MUL):operandi su vec na stogu");
 			}
 			
 			mIspisivac.DodajKod("POP R0", "multiplikativni izraz: skidanje operanada");

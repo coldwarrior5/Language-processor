@@ -1,5 +1,8 @@
 package hr.unizg.fer.labComplete;
 
+import java.util.ArrayList;
+import java.util.List;
+
 class Ime_Velicina_Adresa{
 	String mIme; // identifikator
 	int mVelicina; // u byteovima
@@ -36,6 +39,23 @@ class Utilities {
 		else{ // length mora biti 3
 			return in.charAt(1);
 		}
+	}
+
+	public static List<Character> VratiZnakoveIz_NIZ_ZNAKOVA(String niz_znakova){
+		List<Character> vrati = new ArrayList<Character>();
+		for (int i = 1; i < niz_znakova.length() - 1; ++i){
+			if (niz_znakova.charAt(i) == '\\'){
+				++i;
+				vrati.add('\\');
+				vrati.add(niz_znakova.charAt(i));
+			}else{
+				vrati.add(niz_znakova.charAt(i));
+			}
+		}
+		
+		// dodaj terminal znak
+		vrati.add('\0');
+		return vrati;
 	}
 }
 

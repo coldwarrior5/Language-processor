@@ -282,14 +282,8 @@ public class DeklaracijeIDefinicije {
 			}
 			
 			if (NaredbenaStrukturaPrograma.mStog == null){ // u globalnom smo djelokrugu
-				if (NaredbenaStrukturaPrograma.PretraziIme_Glo(uz_idn.mLeksickaJedinka) == -1){ // ako nije vec deklarirana
-					mIspisivac.DodajGlobalnuVarijablu("G_" + uz_idn.mLeksickaJedinka.toUpperCase(), "DW %D 0");
-					mIspisivac.DodajPreMainKod("MOVE %D 0, R0",
-							"deklaracija funkcije " + uz_idn.mLeksickaJedinka); // stavi nulu za adresu
-				}else{
-					mIspisivac.DodajPreMainKod("MOVE " + "F_" + uz_idn.mLeksickaJedinka.toUpperCase() + ", R0",
-							"deklaracija funkcije " + uz_idn.mLeksickaJedinka);
-				}
+				mIspisivac.DodajPreMainKod("MOVE F_" + uz_idn.mLeksickaJedinka.toUpperCase() + ", R0",
+						"deklaracija funkcije " + uz_idn.mLeksickaJedinka);
 				mIspisivac.DodajPreMainKod("PUSH R0");
 				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
 				novi.mIme = uz_idn.mLeksickaJedinka;
@@ -298,14 +292,8 @@ public class DeklaracijeIDefinicije {
 				NaredbenaStrukturaPrograma.mGlobalniDjelokrug.add(novi);
 				return novi;
 			}else{ // u lokalnom smo djelokrugu
-				if (NaredbenaStrukturaPrograma.PretraziIme_Glo(uz_idn.mLeksickaJedinka) == -1){ // ako nije vec deklarirana
-					mIspisivac.DodajGlobalnuVarijablu("G_" + uz_idn.mLeksickaJedinka.toUpperCase(), "DW %D 0");
-					mIspisivac.DodajKod("MOVE %D 0, R0",
-							"deklaracija funkcije " + uz_idn.mLeksickaJedinka); // stavi nulu za adresu
-				}else{
-					mIspisivac.DodajKod("MOVE " + "F_" + uz_idn.mLeksickaJedinka.toUpperCase() + ", R0",
-							"deklaracija funkcije " + uz_idn.mLeksickaJedinka);
-				}
+				mIspisivac.DodajKod("MOVE F_" + uz_idn.mLeksickaJedinka.toUpperCase() + ", R0",
+						"deklaracija funkcije " + uz_idn.mLeksickaJedinka);
 				mIspisivac.DodajKod("PUSH R0");
 				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
 				novi.mIme = uz_idn.mLeksickaJedinka;
@@ -341,23 +329,30 @@ public class DeklaracijeIDefinicije {
 	
 	public static void OBRADI_inicijalizator(int trenutacnaLabela){
 		String linija = mParser.ParsirajNovuLiniju();
-		
+		boolean jeNizIliLista = false;
+		int brojClanova = 0;
 		if (linija.equals("<izraz_pridruzivanja>")){
 			Izrazi.OBRADI_izraz_pridruzivanja(true);
-			return;
+			if (Izrazi.mZadnjiPrimarniIzrazJe_NIZ_ZNAKOVA){
+				jeNizIliLista = true;
+				brojClanova = Izrazi.mDuljina_NIZ_ZNAKOVA;
+			}
 		}else{ // L_VIT_ZAGRADA
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <lista_izraza_pridruzivanja>
-			int brojClanovaListe = OBRADI_lista_izraza_pridruzivanja();
+			jeNizIliLista = true;
+			brojClanova = OBRADI_lista_izraza_pridruzivanja();
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj D_VIT_ZAGRADA
-			
+		}
+		
+		if (jeNizIliLista){
 			if (NaredbenaStrukturaPrograma.mStog == null){ // u globalnom smo djelokrugu
-				for (int i = brojClanovaListe; i > 0; --i){
+				for (int i = brojClanova; i > 0; --i){
 					mIspisivac.DodajPreMainKod("POP R0", "inicijalizacija polja: dohvacanje clana br " + i);
-					mIspisivac.DodajPreMainKod("STORE R0, (TEMP_" + (trenutacnaLabela + brojClanovaListe - i) + ")", "inicijalizacija polja: spremanje clana br " + i);
+					mIspisivac.DodajPreMainKod("STORE R0, (TEMP_" + (trenutacnaLabela + brojClanova - i) + ")", "inicijalizacija polja: spremanje clana br " + i);
 					// mIspisivac.DodajGlobalnuVarijablu("TEMP_" + Izrazi_Sem.mBrojacLabela++, "DW %D 0"); // vec dodano u izravnom deklaratoru
 					NaredbenaStrukturaPrograma.mGlobalniDjelokrug.remove(NaredbenaStrukturaPrograma.mGlobalniDjelokrug.size()-1);
 				}
-				mIspisivac.DodajPreMainKod("MOVE TEMP_" + (trenutacnaLabela + brojClanovaListe - 1) + ", R0", "inicijalizacija polja: spremanje adrese pocetnog clana");
+				mIspisivac.DodajPreMainKod("MOVE TEMP_" + (trenutacnaLabela + brojClanova - 1) + ", R0", "inicijalizacija polja: spremanje adrese pocetnog clana");
 				mIspisivac.DodajPreMainKod("PUSH R0");
 				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
 				novi.mIme = null;
@@ -368,7 +363,7 @@ public class DeklaracijeIDefinicije {
 				mIspisivac.DodajKod("PUSH R7", "inicijalizacija polja: dohvati adr zadnjeg clana na vrhu stoga (korak 1)");
 				mIspisivac.DodajKod("POP R0", "inicijalizacija polja: dohvati adr zadnjeg clana na vrhu stoga (korak 2)");
 				mIspisivac.DodajKod("ADD R0, 4, R0", "inicijalizacija polja: dohvati adr zadnjeg clana na vrhu stoga (korak 3)");
-				mIspisivac.DodajKod("ADD R0, " + 4*(brojClanovaListe - 1) + ", R0",
+				mIspisivac.DodajKod("ADD R0, " + 4*(brojClanova - 1) + ", R0",
 						"inicijalizacija polja: dohvati adr prvog clana");
 				mIspisivac.DodajKod("PUSH R0", "inicijalizacija polja: stavi je na stog");
 				Ime_Velicina_Adresa novi = new Ime_Velicina_Adresa();
@@ -377,7 +372,6 @@ public class DeklaracijeIDefinicije {
 				novi.mVelicina = 4;
 				NaredbenaStrukturaPrograma.mStog.add(novi);
 			}
-			return;
 		}
 	}
 	

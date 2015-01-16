@@ -99,6 +99,40 @@ public class FRISC_ispisivac {
 			DodajKod("ADD R0, 0, R6");
 			DodajKod("RET", "vrati x%y");
 		}
+		
+		if (mDodajFunkcijuDiv){
+			DodajKod(null); // radi urednosti
+			PostaviSljedecuLabelu("LF_DIV");
+			DodajKod("LOAD R1, (R7+4)", "dohvacam y");
+			DodajKod("LOAD R0, (R7+8)", "dohvacam x");
+			DodajKod("MOVE %D 0, R2", "brojilo oduzimanja");
+			PostaviSljedecuLabelu("LF_DIV_UVIJET");
+			DodajKod("CMP R0, R1");
+			DodajKod("JR_SLT LF_DIV_KRAJ");
+			DodajKod("SUB R0, R1, R0");
+			DodajKod("ADD R2, 1, R2", "uvecaj vrijednost brojila");
+			DodajKod("JR LF_DIV_UVIJET");
+			PostaviSljedecuLabelu("LF_DIV_KRAJ");
+			DodajKod("ADD R2, 0, R6");
+			DodajKod("RET", "vrati x/y");
+		}
+		
+		if (mDodajFunkcijuMul){
+			DodajKod(null); // radi urednosti
+			PostaviSljedecuLabelu("LF_MUL");
+			DodajKod("LOAD R1, (R7+4)", "dohvacam y");
+			DodajKod("LOAD R0, (R7+8)", "dohvacam x");
+			DodajKod("MOVE %D 0, R2");
+			PostaviSljedecuLabelu("LF_MUL_UVIJET");
+			DodajKod("CMP R0, 0");
+			DodajKod("JR_EQ LF_MUL_KRAJ");
+			DodajKod("SUB R0, 1, R0");
+			DodajKod("ADD R2, R1, R2");
+			DodajKod("JR LF_MUL_UVIJET");
+			PostaviSljedecuLabelu("LF_MUL_KRAJ");
+			DodajKod("ADD R2, 0, R6");
+			DodajKod("RET", "vrati x*y");
+		}
 	}
 	
 	/**

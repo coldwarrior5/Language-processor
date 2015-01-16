@@ -1,7 +1,7 @@
 package hr.unizg.fer.labComplete;
 
 public class CompilerPPJ {
-
+	
 	public static void main(String[] args) {
 		LA la = new LA();
 		String laOutput = la.GetOutput();

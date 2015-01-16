@@ -3,6 +3,12 @@ package hr.unizg.fer.labComplete;
 import java.util.ArrayList;
 import java.util.List;
 
+class PetljaUKodu{
+	int mVelicinaStoga;
+	String mLabelaKraj;
+	String mLabelaUvijetIliKorak;
+}
+
 public class NaredbenaStrukturaPrograma_G {
 	
 	public static Parser_G mParser;
@@ -11,6 +17,7 @@ public class NaredbenaStrukturaPrograma_G {
 	public static List<Ime_Velicina_Adresa> mGlobalniDjelokrug = new ArrayList<Ime_Velicina_Adresa>();
 	public static List<Integer> mStanjaStogaDjelokruga = new ArrayList<Integer>();
 	public static int mBrojacLabela = 0;
+	public static List<PetljaUKodu> mStogPetlji = new ArrayList<PetljaUKodu>();
 	
 	public static int PretraziIme_Lok(String imeVar){
 		// pretrazuje stog (lokalni djelokrug)
@@ -188,8 +195,14 @@ public class NaredbenaStrukturaPrograma_G {
 			mStog.remove(mStog.size() - 1);
 			mIspisivac.DodajKod("CMP R0, 0", "while naredba: provjeri ako je izraz jednak 0");
 			mIspisivac.DodajKod("JR_EQ NP_KRAJ_" + trenLabela, "while naredba: ako je onda izadji iz petlje");
-			
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj D_ZAGRADA
+		
+			// sad tijelo petlje
+			PetljaUKodu petlja = new PetljaUKodu();
+			petlja.mVelicinaStoga = mStog.size();
+			petlja.mLabelaKraj = "NP_KRAJ_" + trenLabela;
+			petlja.mLabelaUvijetIliKorak = "NP_UVIJET_" + trenLabela;
+			mStogPetlji.add(petlja);
 			linija = mParser.ParsirajNovuLiniju(); // ucitaj <naredba>
 			OBRADI_naredba();
 			mIspisivac.DodajKod("JR NP_UVIJET_" + trenLabela, "while naredba: povratak na uvijet petlje");
@@ -223,12 +236,25 @@ public class NaredbenaStrukturaPrograma_G {
 				mIspisivac.DodajKod("JR NP_UVIJET_" + trenLabela, "for naredba: nakon koraka skoci na uvijet za provjeru");
 				linija = mParser.ParsirajNovuLiniju(); // ucitaj D_ZAGRADA
 				
+				// sad tijelo petlje
+				PetljaUKodu petlja = new PetljaUKodu();
+				petlja.mVelicinaStoga = mStog.size();
+				petlja.mLabelaKraj = "NP_KRAJ_" + trenLabela;
+				petlja.mLabelaUvijetIliKorak = "NP_KORAK_" + trenLabela;
+				mStogPetlji.add(petlja);
 				mIspisivac.PostaviSljedecuLabelu("NP_DALJE_" + trenLabela);
 				linija = mParser.ParsirajNovuLiniju(); // ucitaj <naredba>
 				OBRADI_naredba();
 			}
 			else{ // it must be D_ZAGRADA
 				imaKorak = false;
+				
+				// sad tijelo petlje
+				PetljaUKodu petlja = new PetljaUKodu();
+				petlja.mVelicinaStoga = mStog.size();
+				petlja.mLabelaKraj = "NP_KRAJ_" + trenLabela;
+				petlja.mLabelaUvijetIliKorak = "NP_UVIJET_" + trenLabela;
+				mStogPetlji.add(petlja);
 				mIspisivac.PostaviSljedecuLabelu("NP_DALJE_" + trenLabela);
 				linija = mParser.ParsirajNovuLiniju(); // ucitaj <naredba>
 				OBRADI_naredba();
@@ -252,10 +278,21 @@ public class NaredbenaStrukturaPrograma_G {
 		
 		// break i continue ??
 		if (uz != null && (uz.mNaziv.equals("KR_CONTINUE") || uz.mNaziv.equals("KR_BREAK"))){
-			linija = mParser.ParsirajNovuLiniju();
-			//UniformniZnak uz_tockaZarez = UniformniZnak.SigurnoStvaranje(linija);
-			// nije implementirano
-			return;
+			linija = mParser.ParsirajNovuLiniju(); // ucitaj TOCKA_ZAREZ
+			PetljaUKodu petlja = mStogPetlji.get(mStogPetlji.size() - 1);
+			if (uz.mNaziv.equals("KR_BREAK")){
+				for (int i = mStog.size(); i > petlja.mVelicinaStoga; --i){// ocisti lokalne varijable koje su ostale na stogu
+					mIspisivac.DodajKod("POP R0", "ciscenje stoga prije KR_BREAK");
+				}
+				mIspisivac.DodajKod("JR " + petlja.mLabelaKraj, "KR_BREAK naredba");
+				return;
+			}else{ // uz.mNaziv.equals("KR_CONTINUE")
+				for (int i = mStog.size(); i > petlja.mVelicinaStoga; --i){// ocisti lokalne varijable koje su ostale na stogu
+					mIspisivac.DodajKod("POP R0", "ciscenje stoga prije KR_CONTINUE");
+				}
+				mIspisivac.DodajKod("JR " + petlja.mLabelaUvijetIliKorak, "KR_CONTINUE naredba");
+				return;
+			}
 		}
 		
 		// return ??
@@ -269,8 +306,7 @@ public class NaredbenaStrukturaPrograma_G {
 			}// else -> mora biti tockaZarez
 			
 			for (int i = mStog.size(); i > DeklaracijeIDefinicije_G.mBrojParametaraTrenutacneFunkcije; --i){// ocisti lokalne varijable koje su ostale na stogu
-				//mStog.remove(i - 1); 							// i smece poput spremanja vrijednosti void funkcije
-				mIspisivac.DodajKod("POP R0", "ciscenje stoga prije RET"); // <- ne brisemo
+				mIspisivac.DodajKod("POP R0", "ciscenje stoga prije RET");
 			}
 			mIspisivac.DodajKod("RET");
 			//mStog.remove(mStog.size()-1); // makni return vrijednost sa stoga // <- ne brisemo

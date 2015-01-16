@@ -1,5 +1,7 @@
 package hr.unizg.fer.lab4;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 enum Tip {_int, _char, _funkcija, _void};
@@ -88,5 +90,22 @@ public class Utilities {
 		else{ // length mora biti 3
 			return in.charAt(1);
 		}
+	}
+
+	public static List<Character> VratiZnakoveIz_NIZ_ZNAKOVA(String niz_znakova){
+		List<Character> vrati = new ArrayList<Character>();
+		for (int i = 1; i < niz_znakova.length() - 1; ++i){
+			if (niz_znakova.charAt(i) == '\\'){
+				++i;
+				vrati.add('\\');
+				vrati.add(niz_znakova.charAt(i));
+			}else{
+				vrati.add(niz_znakova.charAt(i));
+			}
+		}
+		
+		// dodaj terminal znak
+		vrati.add('\0');
+		return vrati;
 	}
 }

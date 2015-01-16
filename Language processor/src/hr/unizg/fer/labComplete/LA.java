@@ -38,7 +38,7 @@ public class LA{
 	Scanner scIn = new Scanner(System.in);
 	while(true){
 		
-		//if(scIn.hasNext()==false){		//This works in terminal
+		//if(scIn.hasNext()==false){	//This works in terminal
 		//	break;						//It expects the stdin to close
 		//}
 		
@@ -47,8 +47,6 @@ public class LA{
 		if(read.equals("")){			//This works in Eclipse
 			break;						//It expects for user to type another enter
 		}
-
-
 		
 		input += read + "\n";
 		
