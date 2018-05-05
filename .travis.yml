@@ -2,9 +2,9 @@ language: java
 jdk:
   - oraclejdk7
 env:
-  - TEST_DIR="Language-processor/src/hr/unizg/fer/lab1"
-  - TEST_DIR="Language-processor/src/hr/unizg/fer/lab2"
-  - TEST_DIR="Language-processor/src/hr/unizg/fer/lab3"
-  - TEST_DIR="Language-processor/src/hr/unizg/fer/lab4"
-  - TEST_DIR="Language-processor/src/hr/unizg/fer/labComplete"
-script: cd "$TEST_DIR"
+  - TEST_DIR=Language-processor/src/hr/unizg/fer/lab1
+  - TEST_DIR=Language-processor/src/hr/unizg/fer/lab2
+  - TEST_DIR=Language-processor/src/hr/unizg/fer/lab3
+  - TEST_DIR=Language-processor/src/hr/unizg/fer/lab4
+  - TEST_DIR=Language-processor/src/hr/unizg/fer/labComplete
+script: cd $TEST_DIR
